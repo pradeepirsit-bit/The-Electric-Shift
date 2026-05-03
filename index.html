@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>The Electric Shift</title>
 
-  <!-- Minimal professional font -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
 
   <style>
@@ -17,30 +16,25 @@
       --accent-2:#2563eb;
       --green:#16a34a;
       --danger:#ef4444;
-      --border: #e6e9ef;
-      --glass: rgba(11,116,255,0.06);
+      --border:#e6e9ef;
+      --glass:rgba(11,116,255,0.06);
       --radius:12px;
-      font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-      color-scheme: light;
+      font-family:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;
     }
 
-    /* Page layout */
     html,body{height:100%;margin:0;background:linear-gradient(180deg,#f8fbff 0%,var(--bg) 100%);-webkit-font-smoothing:antialiased;}
     .wrap{max-width:980px;margin:28px auto;padding:20px;}
     header{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:18px;}
-    header .title{display:flex;flex-direction:column;gap:6px;}
+    .title{display:flex;flex-direction:column;gap:6px;}
     h1{font-size:20px;margin:0;font-weight:700;color:#0f172a;}
     p.lead{margin:0;color:var(--muted);font-size:13px;}
 
-    /* Grid */
-    .grid{display:grid;grid-template-columns:1fr 380px;gap:18px;align-items:start;}
-    @media (max-width:920px){ .grid{grid-template-columns:1fr;} }
+    .grid{display:grid;grid-template-columns:1fr 420px;gap:18px;align-items:start;}
+    @media (max-width:980px){ .grid{grid-template-columns:1fr;} }
 
-    /* Card */
     .card{background:var(--card);border-radius:var(--radius);padding:18px;border:1px solid var(--border);box-shadow:0 6px 18px rgba(15,23,42,0.04);}
     .card.compact{padding:14px;}
 
-    /* Inputs */
     .inputs{display:grid;gap:14px;}
     label{font-size:13px;color:#0f172a;display:block;margin-bottom:6px;font-weight:600;}
     .hint{font-size:12px;color:var(--muted);margin-top:4px;}
@@ -51,12 +45,10 @@
     .field-row{display:flex;gap:12px;align-items:center;}
     .small-badge{font-size:12px;padding:6px 10px;border-radius:999px;background:#f8fafc;border:1px solid #eef2ff;color:#0f172a;align-self:flex-start;}
 
-    /* Buttons */
     .cta{display:flex;gap:12px;align-items:center;margin-top:6px;}
     .btn{background:var(--accent);color:white;padding:12px 16px;border-radius:10px;border:none;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:8px;box-shadow:0 8px 20px rgba(11,116,255,0.08);}
     .btn.secondary{background:transparent;color:var(--accent-2);border:1px solid var(--border);box-shadow:none;font-weight:600;}
 
-    /* Results */
     .results{display:flex;flex-direction:column;gap:12px;}
     .result-row{display:flex;justify-content:space-between;align-items:center;padding:12px;border-radius:10px;background:linear-gradient(90deg,#fff,#fbfdff);border:1px solid #f1f5f9;}
     .result-row.stack{flex-direction:column;align-items:flex-start;gap:10px;}
@@ -64,19 +56,19 @@
     .big{font-size:18px;font-weight:700;color:#0f172a;}
     .savings{background:linear-gradient(90deg,#ecfdf5,#f0fdf4);border:1px solid rgba(16,185,129,0.12);color:var(--green);padding:10px;border-radius:10px;font-weight:700;font-size:16px;text-align:center;min-width:120px;}
 
-    /* Chart container */
-    .chart-wrap{height:260px;padding:12px;background:linear-gradient(180deg,#ffffff,#fbfdff);border-radius:10px;border:1px solid #eef2ff;display:flex;align-items:center;justify-content:center;}
+    .chart-wrap{height:260px;padding:12px;background:linear-gradient(180deg,#ffffff,#fbfdff);border-radius:10px;border:1px solid #eef2ff;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;}
 
-    /* Footer formulas */
     footer{margin-top:12px;color:var(--muted);font-size:12px;}
 
-    /* Accessibility & small tweaks */
     input:focus, select:focus{outline:none;box-shadow:0 0 0 4px rgba(11,116,255,0.06);border-color:var(--accent-2);}
     .muted{color:var(--muted);font-size:13px;}
     .right-badge{font-size:12px;padding:6px 10px;border-radius:8px;background:#f3f6ff;border:1px solid #e6eefc;color:var(--accent-2);}
+
+    /* small helper layout to avoid overlap on narrow screens */
+    .stacked-pair{display:flex;flex-direction:column;gap:8px;}
+    @media (min-width:720px){ .stacked-pair{flex-direction:row;gap:12px;} .stacked-pair > div{flex:1;} }
   </style>
 
-  <!-- Chart.js CDN -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
@@ -86,7 +78,7 @@
         <h1>The Electric Shift</h1>
         <p class="lead">EV vs Petrol: See How Much Money You Save in 30 Seconds</p>
       </div>
-      <div class="small-badge">Enter details — quick estimate</div>
+      <div class="small-badge">Quick estimate</div>
     </header>
 
     <div class="grid">
@@ -95,87 +87,108 @@
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
           <div>
             <div style="font-weight:700;">Enter your details and find your real savings</div>
-            <div class="hint">Essential fields only — minimal and professional</div>
+            <div class="hint">Essential fields only — financing included</div>
           </div>
-          <div class="right-badge">Quick</div>
+          <div class="right-badge">Minimal</div>
         </div>
 
         <div class="inputs">
           <div class="field-group">
             <label for="dailyKm">Daily travel (km)</label>
-            <input id="dailyKm" type="number" min="0" step="1" value="30" aria-label="Daily travel in kilometers" />
+            <input id="dailyKm" type="number" min="0" step="1" value="30" />
           </div>
 
           <div class="field-group">
             <label for="vehicleType">Vehicle Type</label>
-            <select id="vehicleType" aria-label="Vehicle type">
+            <select id="vehicleType">
               <option value="car">Car</option>
               <option value="ev_scooter">EV Scooter</option>
               <option value="petrol_scooter">Petrol Scooter</option>
             </select>
-            <div class="hint">Type is for context only; calculations use the numeric inputs below.</div>
+            <div class="hint">Type is for context only; calculations use numeric inputs below.</div>
           </div>
 
-          <!-- Two-column inputs with clear stacking to avoid overlap -->
-          <div class="two-col" aria-hidden="false">
-            <!-- Petrol column -->
-            <div class="field-group" style="min-width:0;">
+          <!-- Fuel & EV numeric inputs arranged to avoid overlap -->
+          <div class="two-col">
+            <div class="field-group">
               <label>Petrol Vehicle</label>
-              <div class="field-row" style="flex-direction:column;align-items:stretch;">
+              <div class="stacked-pair">
                 <div>
                   <label class="label-muted" for="mileage">Mileage (km per litre)</label>
-                  <input id="mileage" type="number" min="1" step="0.1" value="18" aria-label="Mileage kilometers per litre" />
+                  <input id="mileage" type="number" min="1" step="0.1" value="18" />
                 </div>
-                <div style="margin-top:8px;">
+                <div>
                   <label class="label-muted" for="petrolPrice">Petrol price (₹)</label>
-                  <input id="petrolPrice" type="number" min="1" step="0.1" value="100" aria-label="Petrol price in rupees" />
+                  <input id="petrolPrice" type="number" min="0" step="0.1" value="100" />
+                </div>
+                <div>
+                  <label class="label-muted" for="petrolPriceVehicle">Petrol vehicle price (₹)</label>
+                  <input id="petrolPriceVehicle" type="number" min="0" step="100" value="500000" />
                 </div>
               </div>
             </div>
 
-            <!-- EV column -->
-            <div class="field-group" style="min-width:0;">
+            <div class="field-group">
               <label>EV Vehicle</label>
-              <div class="field-row" style="flex-direction:column;align-items:stretch;">
+              <div class="stacked-pair">
                 <div>
                   <label class="label-muted" for="chargeCost">Cost per full charge (₹)</label>
-                  <input id="chargeCost" type="number" min="0" step="0.1" value="50" aria-label="Cost per full charge in rupees" />
+                  <input id="chargeCost" type="number" min="0" step="0.1" value="50" />
                 </div>
-                <div style="margin-top:8px;">
+                <div>
                   <label class="label-muted" for="rangePerCharge">Range per charge (km)</label>
-                  <input id="rangePerCharge" type="number" min="1" step="1" value="60" aria-label="Range per full charge in kilometers" />
+                  <input id="rangePerCharge" type="number" min="1" step="1" value="60" />
+                </div>
+                <div>
+                  <label class="label-muted" for="evPrice">EV price (₹)</label>
+                  <input id="evPrice" type="number" min="0" step="100" value="700000" />
                 </div>
               </div>
             </div>
+          </div>
+
+          <!-- Loan inputs -->
+          <div class="field-group">
+            <label>Loan details (applies to both vehicles)</label>
+            <div class="stacked-pair">
+              <div>
+                <label class="label-muted" for="loanInterest">Loan interest (%) annual</label>
+                <input id="loanInterest" type="number" min="0" step="0.01" value="9.5" />
+              </div>
+              <div>
+                <label class="label-muted" for="loanTenure">Loan tenure (years)</label>
+                <input id="loanTenure" type="number" min="1" max="10" step="1" value="5" />
+              </div>
+            </div>
+            <div class="hint">Loan inputs are used to compute monthly loan payments added to monthly ownership cost</div>
           </div>
 
           <div class="field-group">
-            <label for="years">Years of ownership</label>
+            <label for="years">Years of ownership (analysis)</label>
             <div style="display:flex;gap:12px;align-items:center;">
-              <input id="years" type="range" min="1" max="10" value="5" aria-label="Years of ownership" />
+              <input id="years" type="range" min="1" max="10" value="5" />
               <div class="right-badge" id="yearsLabel">5 years</div>
             </div>
           </div>
 
           <div class="cta">
-            <button id="calculateBtn" class="btn" aria-label="Calculate savings">Calculate Now ↓</button>
-            <button id="resetBtn" class="btn secondary" aria-label="Reset form">Reset</button>
+            <button id="calculateBtn" class="btn">Calculate Now ↓</button>
+            <button id="resetBtn" class="btn secondary">Reset</button>
           </div>
         </div>
       </div>
 
-      <!-- Right: Results + Chart -->
+      <!-- Right: Results + Charts -->
       <div>
         <div class="card results compact">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
             <div>
               <div style="font-weight:700;">Results</div>
-              <div class="hint">Clear comparison and total savings</div>
+              <div class="hint">Monthly, total and financing-aware comparison</div>
             </div>
             <div class="small-badge" id="summaryBadge">Monthly view</div>
           </div>
 
-          <!-- Summary row -->
           <div class="result-row">
             <div>
               <div class="label-muted">Summary</div>
@@ -187,10 +200,9 @@
             <div class="small-badge">Quick compare</div>
           </div>
 
-          <!-- Monthly cost -->
           <div class="result-row">
             <div>
-              <div class="label-muted">Monthly cost</div>
+              <div class="label-muted">Monthly cost (fuel/charge + loan)</div>
               <div style="display:flex;gap:12px;margin-top:8px;">
                 <div><div class="label-muted">Petrol</div><div class="big" id="petrolMonthly">—</div></div>
                 <div><div class="label-muted">EV</div><div class="big" id="evMonthly">—</div></div>
@@ -202,10 +214,9 @@
             </div>
           </div>
 
-          <!-- Total cost & savings -->
           <div class="result-row" style="align-items:stretch;">
             <div style="flex:1;">
-              <div class="label-muted">Total cost over ownership</div>
+              <div class="label-muted">Total cost over ownership (all costs)</div>
               <div style="display:flex;gap:12px;margin-top:8px;">
                 <div><div class="label-muted">Petrol</div><div class="big" id="petrolTotal">—</div></div>
                 <div><div class="label-muted">EV</div><div class="big" id="evTotal">—</div></div>
@@ -218,17 +229,30 @@
           </div>
 
           <div class="chart-wrap" style="margin-top:8px;">
-            <canvas id="costChart" height="200" aria-label="Bar chart comparing monthly cost for petrol and EV"></canvas>
+            <div style="width:100%;display:flex;justify-content:space-between;align-items:center;">
+              <div class="label-muted">Monthly cost comparison</div>
+              <div class="label-muted" id="breakEvenText">Break-even: —</div>
+            </div>
+            <canvas id="costChart" height="140" style="width:100%;"></canvas>
+          </div>
+
+          <div class="chart-wrap" style="margin-top:10px;">
+            <div style="width:100%;display:flex;justify-content:space-between;align-items:center;">
+              <div class="label-muted">Cumulative savings over time</div>
+              <div class="label-muted">X-axis: months</div>
+            </div>
+            <canvas id="cumulativeChart" height="140" style="width:100%;"></canvas>
           </div>
         </div>
 
         <footer>
-          <div class="label-muted">Formulas used (hidden details computed):</div>
+          <div class="label-muted">Formulas used:</div>
           <div style="margin-top:6px;color:var(--muted);font-size:12px;">
             <div>Petrol cost per km = petrol_price ÷ mileage (computed but not shown)</div>
             <div>EV cost per km = charging_cost ÷ range (computed but not shown)</div>
             <div>Monthly km = daily_km × 30</div>
-            <div>Total cost = monthly × 12 × years</div>
+            <div>Loan monthly payment uses standard amortization formula</div>
+            <div>Total cost = (monthly fuel/charge + loan payment) × 12 × years</div>
           </div>
         </footer>
       </div>
@@ -248,6 +272,11 @@
     const calculateBtn = document.getElementById('calculateBtn');
     const resetBtn = document.getElementById('resetBtn');
 
+    const petrolPriceVehicleEl = document.getElementById('petrolPriceVehicle');
+    const evPriceEl = document.getElementById('evPrice');
+    const loanInterestEl = document.getElementById('loanInterest');
+    const loanTenureEl = document.getElementById('loanTenure');
+
     // Result elements
     const petrolMonthlyEl = document.getElementById('petrolMonthly');
     const evMonthlyEl = document.getElementById('evMonthly');
@@ -257,68 +286,113 @@
     const dailyKmBadge = document.getElementById('dailyKmBadge');
     const yearsBadge = document.getElementById('yearsBadge');
     const monthlyKmBadge = document.getElementById('monthlyKmBadge');
+    const breakEvenText = document.getElementById('breakEvenText');
 
     // Chart setup
-    const ctx = document.getElementById('costChart').getContext('2d');
-    let costChart = new Chart(ctx, {
+    const ctxCost = document.getElementById('costChart').getContext('2d');
+    const ctxCum = document.getElementById('cumulativeChart').getContext('2d');
+
+    const costChart = new Chart(ctxCost, {
       type: 'bar',
       data: {
         labels: ['Petrol', 'EV'],
+        datasets: [{
+          label: 'Monthly cost (₹)',
+          data: [0,0],
+          backgroundColor: ['#ff7a7a','#60a5fa'],
+          borderRadius: 8
+        }]
+      },
+      options: {
+        responsive:true,
+        maintainAspectRatio:false,
+        scales:{ y:{ beginAtZero:true, ticks:{precision:0} } },
+        plugins:{ legend:{display:false}, tooltip:{callbacks:{ label: ctx => `₹ ${Number(ctx.raw).toLocaleString()}` } } }
+      }
+    });
+
+    const cumulativeChart = new Chart(ctxCum, {
+      type: 'line',
+      data: {
+        labels: [],
         datasets: [
           {
-            label: 'Monthly cost (₹)',
-            data: [0,0],
-            backgroundColor: ['#ff7a7a','#60a5fa'],
-            borderRadius: 8
+            label: 'Cumulative savings (₹)',
+            data: [],
+            borderColor: '#16a34a',
+            backgroundColor: 'rgba(22,163,74,0.08)',
+            fill: true,
+            tension: 0.25,
+            pointRadius: 0
           }
         ]
       },
       options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-          y: { beginAtZero:true, ticks:{precision:0} }
+        responsive:true,
+        maintainAspectRatio:false,
+        scales:{
+          x:{ title:{display:true,text:'Months'} },
+          y:{ beginAtZero:true, ticks:{precision:0} }
         },
-        plugins: {
-          legend: { display:false },
-          tooltip: { callbacks: { label: ctx => `₹ ${Number(ctx.raw).toLocaleString()}` } }
-        }
+        plugins:{ legend:{display:false}, tooltip:{callbacks:{ label: ctx => `₹ ${Number(ctx.raw).toLocaleString()}` } } }
       }
     });
 
-    // Calculation logic (matches backend formulas)
+    // Utility: monthly loan payment using amortization
+    function monthlyLoanPayment(principal, annualRatePercent, years) {
+      if (principal <= 0 || years <= 0) return 0;
+      const r = (annualRatePercent / 100) / 12;
+      const n = years * 12;
+      if (r === 0) return principal / n;
+      const payment = principal * (r / (1 - Math.pow(1 + r, -n)));
+      return payment;
+    }
+
+    // Main calculation
     function calculateAll(){
       const dailyKm = Math.max(0, Number(dailyKmEl.value) || 0);
       const mileage = Math.max(0.0001, Number(mileageEl.value) || 0.0001);
       const petrolPrice = Math.max(0, Number(petrolPriceEl.value) || 0);
       const chargeCost = Math.max(0, Number(chargeCostEl.value) || 0);
       const rangePerCharge = Math.max(0.0001, Number(rangeEl.value) || 0.0001);
-      const years = Math.max(1, Number(yearsEl.value) || 1);
+      const analysisYears = Math.max(1, Number(years.value) || 1);
 
-      // Hidden intermediate values (computed but not shown)
+      const petrolVehiclePrice = Math.max(0, Number(petrolPriceVehicleEl.value) || 0);
+      const evPrice = Math.max(0, Number(evPriceEl.value) || 0);
+      const loanInterest = Math.max(0, Number(loanInterestEl.value) || 0);
+      const loanTenureYears = Math.max(1, Number(loanTenureEl.value) || 1);
+
+      // Hidden intermediate values
       const petrol_cost_per_km = petrolPrice / mileage;
       const ev_cost_per_km = chargeCost / rangePerCharge;
 
       const monthly_km = dailyKm * 30;
-      const petrol_monthly = monthly_km * petrol_cost_per_km;
-      const ev_monthly = monthly_km * ev_cost_per_km;
+      const petrol_fuel_monthly = monthly_km * petrol_cost_per_km;
+      const ev_charge_monthly = monthly_km * ev_cost_per_km;
 
-      const total_petrol = petrol_monthly * 12 * years;
-      const total_ev = ev_monthly * 12 * years;
+      // Loan monthly payments for vehicle purchase
+      const petrolLoanMonthly = monthlyLoanPayment(petrolVehiclePrice, loanInterest, loanTenureYears);
+      const evLoanMonthly = monthlyLoanPayment(evPrice, loanInterest, loanTenureYears);
 
+      // Total monthly ownership cost = fuel/charge + loan payment
+      const petrol_monthly_total = petrol_fuel_monthly + petrolLoanMonthly;
+      const ev_monthly_total = ev_charge_monthly + evLoanMonthly;
+
+      // Totals over analysis period
+      const total_petrol = petrol_monthly_total * 12 * analysisYears;
+      const total_ev = ev_monthly_total * 12 * analysisYears;
       const savings = total_petrol - total_ev;
 
-      // Update UI (formatted)
-      petrolMonthlyEl.textContent = `₹ ${Math.round(petrol_monthly).toLocaleString()}`;
-      evMonthlyEl.textContent = `₹ ${Math.round(ev_monthly).toLocaleString()}`;
+      // Update UI
+      petrolMonthlyEl.textContent = `₹ ${Math.round(petrol_monthly_total).toLocaleString()}`;
+      evMonthlyEl.textContent = `₹ ${Math.round(ev_monthly_total).toLocaleString()}`;
       petrolTotalEl.textContent = `₹ ${Math.round(total_petrol).toLocaleString()}`;
       evTotalEl.textContent = `₹ ${Math.round(total_ev).toLocaleString()}`;
       totalSavingsEl.textContent = `₹ ${Math.round(savings).toLocaleString()}`;
       dailyKmBadge.textContent = `${dailyKm} km`;
-      yearsBadge.textContent = `${years} years`;
+      yearsBadge.textContent = `${analysisYears} years`;
       monthlyKmBadge.textContent = `${monthly_km.toLocaleString()} km`;
 
-      // Color savings: green if positive, red if negative
       if (savings >= 0) {
         totalSavingsEl.style.color = 'var(--green)';
         totalSavingsEl.style.background = 'linear-gradient(90deg,#ecfdf5,#f0fdf4)';
@@ -329,9 +403,49 @@
         totalSavingsEl.style.border = '1px solid rgba(239,68,68,0.08)';
       }
 
-      // Update chart (monthly comparison)
-      costChart.data.datasets[0].data = [Math.round(petrol_monthly), Math.round(ev_monthly)];
+      // Update monthly comparison chart
+      costChart.data.datasets[0].data = [Math.round(petrol_monthly_total), Math.round(ev_monthly_total)];
       costChart.update();
+
+      // Build cumulative savings timeline (month-by-month) and find break-even
+      // cumulative_savings_month = cumulative_savings_prev + (petrol_monthly_total - ev_monthly_total)
+      const months = analysisYears * 12;
+      const monthlyDelta = petrol_monthly_total - ev_monthly_total;
+      const labels = [];
+      const cumData = [];
+      let cum = 0;
+      let breakEvenMonth = -1;
+
+      for (let m = 1; m <= months; m++) {
+        cum += monthlyDelta;
+        labels.push(m);
+        cumData.push(Math.round(cum));
+        if (breakEvenMonth === -1 && cum >= 0) breakEvenMonth = m;
+      }
+
+      // If never breaks even within analysisYears, compute approximate break-even in years if monthlyDelta > 0
+      let breakEvenTextStr = '—';
+      if (breakEvenMonth > 0) {
+        const yearsBE = Math.floor((breakEvenMonth - 1) / 12);
+        const monthsBE = ((breakEvenMonth - 1) % 12) + 1;
+        breakEvenTextStr = `${yearsBE}y ${monthsBE}m (month ${breakEvenMonth})`;
+      } else if (monthlyDelta <= 0) {
+        breakEvenTextStr = 'No break-even within period';
+      } else {
+        // monthlyDelta > 0 but breakEvenMonth not found because months=0 or other edge
+        const approxMonths = Math.ceil(( (evPrice - petrolVehiclePrice) ) / monthlyDelta);
+        if (approxMonths > 0) {
+          const y = Math.floor(approxMonths / 12);
+          const mo = approxMonths % 12;
+          breakEvenTextStr = `${y}y ${mo}m (approx)`;
+        }
+      }
+      breakEvenText.textContent = `Break-even: ${breakEvenTextStr}`;
+
+      // Update cumulative chart
+      cumulativeChart.data.labels = labels;
+      cumulativeChart.data.datasets[0].data = cumData;
+      cumulativeChart.update();
     }
 
     // Events
@@ -340,6 +454,8 @@
     resetBtn.addEventListener('click', () => {
       dailyKmEl.value = 30; mileageEl.value = 18; petrolPriceEl.value = 100;
       chargeCostEl.value = 50; rangeEl.value = 60; yearsEl.value = 5;
+      petrolPriceVehicleEl.value = 500000; evPriceEl.value = 700000;
+      loanInterestEl.value = 9.5; loanTenureEl.value = 5;
       yearsLabel.textContent = '5 years';
       calculateAll();
     });

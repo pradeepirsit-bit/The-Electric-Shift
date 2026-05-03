@@ -47,6 +47,7 @@
     .cta{display:flex;gap:12px;align-items:center;margin-top:6px;}
     .btn{background:var(--accent);color:white;padding:12px 16px;border-radius:10px;border:none;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:8px;box-shadow:0 8px 20px rgba(11,116,255,0.08);}
     .btn.secondary{background:transparent;color:var(--accent-2);border:1px solid var(--border);box-shadow:none;font-weight:600;}
+    .btn.ghost{background:transparent;border:1px dashed var(--border);color:var(--muted);padding:8px 12px;border-radius:8px;}
 
     .results{display:flex;flex-direction:column;gap:12px;}
     .result-row{display:flex;justify-content:space-between;align-items:center;padding:12px;border-radius:10px;background:linear-gradient(90deg,#fff,#fbfdff);border:1px solid #f1f5f9;}
@@ -66,7 +67,6 @@
     .stacked-pair{display:flex;flex-direction:column;gap:8px;}
     @media (min-width:720px){ .stacked-pair{flex-direction:row;gap:12px;} .stacked-pair > div{flex:1;} }
 
-    /* Loan calculator box */
     .loan-card{margin-top:12px;padding:12px;border-radius:10px;border:1px solid #eef2ff;background:#fff;}
     .mini{font-size:13px;color:var(--muted);}
     .tips{font-size:13px;color:var(--muted);line-height:1.4;margin-top:8px;}
@@ -90,7 +90,7 @@
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
           <div>
             <div style="font-weight:700;">Enter your details and find your real savings</div>
-            <div class="hint">Essential fields only — now includes a Loan Calculator section</div>
+            <div class="hint">Essential fields only — loan calculator is optional and separate</div>
           </div>
           <div class="right-badge">Minimal</div>
         </div>
@@ -155,11 +155,11 @@
             <button id="resetBtn" class="btn secondary">Reset</button>
           </div>
 
-          <!-- Loan Calculator Section -->
+          <!-- Loan Calculator Section (separate) -->
           <div class="loan-card" id="loanSection">
             <div style="display:flex;justify-content:space-between;align-items:center;">
               <div style="font-weight:700;">Loan Calculator</div>
-              <div class="mini">Optional — compare EMI and purchase tradeoffs</div>
+              <div class="mini">Optional — click Calculate (Loan) to update EMI impact</div>
             </div>
 
             <div style="margin-top:10px;" class="two-col">
@@ -206,8 +206,13 @@
               </div>
             </div>
 
+            <div style="display:flex;gap:8px;margin-top:12px;">
+              <button id="loanCalculateBtn" class="btn ghost">Calculate (Loan)</button>
+              <button id="loanResetBtn" class="btn secondary">Reset Loan</button>
+            </div>
+
             <div class="tips" id="loanTips">
-              <div><strong>Break-even</strong> will be shown in results and on the cumulative chart. If net monthly savings are positive, EV becomes more profitable over time — the calculator estimates months to recoup the upfront price difference.</div>
+              <div><strong>How EMI affects savings</strong>: EMI reduces monthly net savings. Use the EMI Impact chart to see cumulative effect and tips below to increase savings.</div>
             </div>
           </div>
         </div>
@@ -273,18 +278,26 @@
 
           <div class="chart-wrap" style="margin-top:10px;">
             <div style="width:100%;display:flex;justify-content:space-between;align-items:center;">
-              <div class="label-muted">Cumulative savings over time</div>
+              <div class="label-muted">Cumulative savings over time (with EMI)</div>
               <div class="label-muted">X-axis: months</div>
             </div>
             <canvas id="cumulativeChart" height="140" style="width:100%;"></canvas>
+          </div>
+
+          <div class="chart-wrap" style="margin-top:10px;">
+            <div style="width:100%;display:flex;justify-content:space-between;align-items:center;">
+              <div class="label-muted">EMI Impact: cumulative savings with vs without EMI</div>
+              <div class="label-muted">Shows how EMI reduces saving potential</div>
+            </div>
+            <canvas id="emiImpactChart" height="140" style="width:100%;"></canvas>
           </div>
         </div>
 
         <footer>
           <div class="label-muted">Formulas used:</div>
           <div style="margin-top:6px;color:var(--muted);font-size:12px;">
-            <div>Petrol cost per km = petrol_price ÷ mileage (computed but not shown)</div>
-            <div>EV cost per km = charging_cost ÷ range (computed but not shown)</div>
+            <div>Petrol cost per km = petrol_price ÷ mileage</div>
+            <div>EV cost per km = charging_cost ÷ range</div>
             <div>Monthly km = daily_km × 30</div>
             <div>EMI uses standard amortization formula per vehicle</div>
             <div>Total cost = (monthly fuel/charge + EMI) × 12 × years</div>
@@ -318,6 +331,9 @@
     const petrolEmiEl = document.getElementById('petrolEmi');
     const monthlyFuelSavingsEl = document.getElementById('monthlyFuelSavings');
     const netMonthlySavingsEl = document.getElementById('netMonthlySavings');
+    const loanCalculateBtn = document.getElementById('loanCalculateBtn');
+    const loanResetBtn = document.getElementById('loanResetBtn');
+    const loanTips = document.getElementById('loanTips');
 
     // Result elements
     const petrolMonthlyEl = document.getElementById('petrolMonthly');
@@ -333,6 +349,7 @@
     // Charts
     const ctxCost = document.getElementById('costChart').getContext('2d');
     const ctxCum = document.getElementById('cumulativeChart').getContext('2d');
+    const ctxEmi = document.getElementById('emiImpactChart').getContext('2d');
 
     const costChart = new Chart(ctxCost, {
       type: 'bar',
@@ -380,6 +397,42 @@
       }
     });
 
+    const emiImpactChart = new Chart(ctxEmi, {
+      type: 'line',
+      data: {
+        labels: [],
+        datasets: [
+          {
+            label: 'Cumulative without EMI (fuel-only)',
+            data: [],
+            borderColor: '#2563eb',
+            backgroundColor: 'rgba(37,99,235,0.06)',
+            fill: false,
+            tension: 0.25,
+            pointRadius: 0
+          },
+          {
+            label: 'Cumulative with EMI (net savings)',
+            data: [],
+            borderColor: '#ef4444',
+            backgroundColor: 'rgba(239,68,68,0.06)',
+            fill: false,
+            tension: 0.25,
+            pointRadius: 0
+          }
+        ]
+      },
+      options: {
+        responsive:true,
+        maintainAspectRatio:false,
+        scales:{
+          x:{ title:{display:true,text:'Months'} },
+          y:{ beginAtZero:true, ticks:{precision:0} }
+        },
+        plugins:{ tooltip:{callbacks:{ label: ctx => `₹ ${Number(ctx.raw).toLocaleString()}` } } }
+      }
+    });
+
     // Utility: monthly loan payment using amortization
     function monthlyLoanPayment(principal, annualRatePercent, years) {
       if (principal <= 0 || years <= 0) return 0;
@@ -390,8 +443,8 @@
       return payment;
     }
 
-    // Main calculation
-    function calculateAll(){
+    // Core calculation (fuel-only + optional EMI if loan inputs used)
+    function calculateAll() {
       // Basic inputs
       const dailyKm = Math.max(0, Number(dailyKmEl.value) || 0);
       const mileage = Math.max(0.0001, Number(mileageEl.value) || 0.0001);
@@ -400,7 +453,7 @@
       const rangePerCharge = Math.max(0.0001, Number(rangeEl.value) || 0.0001);
       const analysisYears = Math.max(1, Number(yearsEl.value) || 1);
 
-      // Loan inputs
+      // Loan inputs (may be zero/unused)
       const petrolVehiclePrice = Math.max(0, Number(petrolVehiclePriceEl.value) || 0);
       const evVehiclePrice = Math.max(0, Number(evVehiclePriceEl.value) || 0);
       const loanInterest = Math.max(0, Number(loanInterestEl.value) || 0);
@@ -434,27 +487,21 @@
       const netMonthlySavings = (petrol_fuel_monthly - ev_charge_monthly) - (evEmi - petrolEmi);
 
       // Break-even calculation (months to recoup upfront price difference)
-      // If EV is more expensive upfront, months = (EV_price - Petrol_price) / netMonthlySavings
-      // If netMonthlySavings <= 0, break-even not achievable within period
-      let breakEvenMonth = -1;
       let breakEvenTextStr = '—';
       if (netMonthlySavings > 0) {
         const priceDiff = evVehiclePrice - petrolVehiclePrice;
         if (priceDiff <= 0) {
-          breakEvenMonth = 0; // EV cheaper or equal upfront
           breakEvenTextStr = 'Immediate (EV cheaper upfront)';
         } else {
-          breakEvenMonth = Math.ceil(priceDiff / netMonthlySavings);
+          const breakEvenMonth = Math.ceil(priceDiff / netMonthlySavings);
           const yearsBE = Math.floor(breakEvenMonth / 12);
           const monthsBE = breakEvenMonth % 12;
           breakEvenTextStr = `${yearsBE}y ${monthsBE}m (month ${breakEvenMonth})`;
         }
       } else {
-        // If netMonthlySavings <= 0 but monthlyFuelSavings positive, show when fuel-only recoup would happen ignoring EMI
         if (monthlyFuelSavings > 0) {
           const priceDiff = evVehiclePrice - petrolVehiclePrice;
           if (priceDiff <= 0) {
-            breakEvenMonth = 0;
             breakEvenTextStr = 'Immediate (EV cheaper upfront)';
           } else {
             const monthsFuelOnly = Math.ceil(priceDiff / monthlyFuelSavings);
@@ -503,19 +550,115 @@
       const labels = [];
       const cumData = [];
       let cum = 0;
-      let timelineBreakEven = -1;
-
       for (let m = 1; m <= months; m++) {
         cum += monthlyDelta;
         labels.push(m);
         cumData.push(Math.round(cum));
-        if (timelineBreakEven === -1 && cum >= 0) timelineBreakEven = m;
       }
 
       // Update cumulative chart
       cumulativeChart.data.labels = labels;
       cumulativeChart.data.datasets[0].data = cumData;
       cumulativeChart.update();
+
+      // Update EMI impact chart as well (compare cumulative fuel-only vs cumulative with EMI)
+      updateEmiImpactChart();
+    }
+
+    // Loan-only calculate: updates EMI values, net monthly savings and EMI impact chart
+    function calculateLoanSection() {
+      // Read inputs (some may be zero)
+      const dailyKm = Math.max(0, Number(dailyKmEl.value) || 0);
+      const mileage = Math.max(0.0001, Number(mileageEl.value) || 0.0001);
+      const petrolPrice = Math.max(0, Number(petrolPriceEl.value) || 0);
+      const chargeCost = Math.max(0, Number(chargeCostEl.value) || 0);
+      const rangePerCharge = Math.max(0.0001, Number(rangeEl.value) || 0.0001);
+      const analysisYears = Math.max(1, Number(yearsEl.value) || 1);
+
+      const petrolVehiclePrice = Math.max(0, Number(petrolVehiclePriceEl.value) || 0);
+      const evVehiclePrice = Math.max(0, Number(evVehiclePriceEl.value) || 0);
+      const loanInterest = Math.max(0, Number(loanInterestEl.value) || 0);
+      const loanTenureYears = Math.max(1, Number(loanTenureEl.value) || 1);
+
+      const petrol_cost_per_km = petrolPrice / mileage;
+      const ev_cost_per_km = chargeCost / rangePerCharge;
+      const monthly_km = dailyKm * 30;
+      const petrol_fuel_monthly = monthly_km * petrol_cost_per_km;
+      const ev_charge_monthly = monthly_km * ev_cost_per_km;
+
+      const petrolEmi = monthlyLoanPayment(petrolVehiclePrice, loanInterest, loanTenureYears);
+      const evEmi = monthlyLoanPayment(evVehiclePrice, loanInterest, loanTenureYears);
+
+      const monthlyFuelSavings = petrol_fuel_monthly - ev_charge_monthly;
+      const netMonthlySavings = (petrol_fuel_monthly - ev_charge_monthly) - (evEmi - petrolEmi);
+
+      // Update loan UI
+      evEmiEl.textContent = evEmi > 0 ? `₹ ${Math.round(evEmi).toLocaleString()}` : '₹ 0';
+      petrolEmiEl.textContent = petrolEmi > 0 ? `₹ ${Math.round(petrolEmi).toLocaleString()}` : '₹ 0';
+      monthlyFuelSavingsEl.textContent = `₹ ${Math.round(monthlyFuelSavings).toLocaleString()}`;
+      netMonthlySavingsEl.textContent = `₹ ${Math.round(netMonthlySavings).toLocaleString()}`;
+
+      // Update EMI impact chart and tips
+      updateEmiImpactChart();
+
+      // Update tips: actionable suggestions to increase savings
+      const tips = [];
+      if (netMonthlySavings <= 0) {
+        tips.push('Reduce EMI: increase down payment or choose longer tenure (but watch total interest).');
+        tips.push('Lower charging cost: charge during off-peak hours or use cheaper plans.');
+        tips.push('Improve range or efficiency: choose higher range model or optimize driving habits.');
+        tips.push('Increase petrol price resilience: consider total cost of ownership beyond fuel.');
+      } else {
+        tips.push('Net monthly savings are positive — keep charging costs low and maintain efficiency.');
+        tips.push('Consider shorter loan tenure if you can afford higher EMI to reduce total interest.');
+      }
+      loanTips.innerHTML = `<div><strong>How to increase savings</strong>:</div><ul style="margin:8px 0 0 18px;color:var(--muted)">${tips.map(t => `<li>${t}</li>`).join('')}</ul>`;
+    }
+
+    // Update EMI impact chart: cumulative fuel-only vs cumulative with EMI (net)
+    function updateEmiImpactChart() {
+      const dailyKm = Math.max(0, Number(dailyKmEl.value) || 0);
+      const mileage = Math.max(0.0001, Number(mileageEl.value) || 0.0001);
+      const petrolPrice = Math.max(0, Number(petrolPriceEl.value) || 0);
+      const chargeCost = Math.max(0, Number(chargeCostEl.value) || 0);
+      const rangePerCharge = Math.max(0.0001, Number(rangeEl.value) || 0.0001);
+      const analysisYears = Math.max(1, Number(yearsEl.value) || 1);
+
+      const petrolVehiclePrice = Math.max(0, Number(petrolVehiclePriceEl.value) || 0);
+      const evVehiclePrice = Math.max(0, Number(evVehiclePriceEl.value) || 0);
+      const loanInterest = Math.max(0, Number(loanInterestEl.value) || 0);
+      const loanTenureYears = Math.max(1, Number(loanTenureEl.value) || 1);
+
+      const petrol_cost_per_km = petrolPrice / mileage;
+      const ev_cost_per_km = chargeCost / rangePerCharge;
+      const monthly_km = dailyKm * 30;
+      const petrol_fuel_monthly = monthly_km * petrol_cost_per_km;
+      const ev_charge_monthly = monthly_km * ev_cost_per_km;
+
+      const petrolEmi = monthlyLoanPayment(petrolVehiclePrice, loanInterest, loanTenureYears);
+      const evEmi = monthlyLoanPayment(evVehiclePrice, loanInterest, loanTenureYears);
+
+      const months = Math.max(1, analysisYears * 12);
+      const labels = [];
+      const cumWithoutEmi = [];
+      const cumWithEmi = [];
+      let cumNoEmi = 0;
+      let cumWith = 0;
+
+      for (let m = 1; m <= months; m++) {
+        // fuel-only cumulative savings (petrol - ev charge)
+        cumNoEmi += (petrol_fuel_monthly - ev_charge_monthly);
+        // with EMI: petrol_total - ev_total each month
+        cumWith += ((petrol_fuel_monthly + petrolEmi) - (ev_charge_monthly + evEmi));
+        labels.push(m);
+        cumWithoutEmi.push(Math.round(cumNoEmi));
+        cumWithEmi.push(Math.round(cumWith));
+      }
+
+      emiImpactChart.data.labels = labels;
+      emiImpactChart.data.datasets[0].data = cumWithoutEmi;
+      emiImpactChart.data.datasets[1].data = cumWithEmi;
+      emiImpactChart.update();
     }
 
     // Events
@@ -531,7 +674,22 @@
       petrolVehiclePriceEl.value = 500000; evVehiclePriceEl.value = 700000;
       loanInterestEl.value = 9.5; loanTenureEl.value = 5;
 
+      // Clear loan outputs and tips
+      evEmiEl.textContent = '—'; petrolEmiEl.textContent = '—';
+      monthlyFuelSavingsEl.textContent = '—'; netMonthlySavingsEl.textContent = '—';
+      loanTips.innerHTML = `<div><strong>How EMI affects savings</strong>: EMI reduces monthly net savings. Click Calculate (Loan) to see impact.</div>`;
+
       calculateAll();
+    });
+
+    loanCalculateBtn.addEventListener('click', () => { calculateLoanSection(); });
+    loanResetBtn.addEventListener('click', () => {
+      petrolVehiclePriceEl.value = 500000; evVehiclePriceEl.value = 700000;
+      loanInterestEl.value = 9.5; loanTenureEl.value = 5;
+      evEmiEl.textContent = '—'; petrolEmiEl.textContent = '—';
+      monthlyFuelSavingsEl.textContent = '—'; netMonthlySavingsEl.textContent = '—';
+      loanTips.innerHTML = `<div><strong>How EMI affects savings</strong>: EMI reduces monthly net savings. Click Calculate (Loan) to see impact.</div>`;
+      updateEmiImpactChart();
     });
 
     // Initial calculation

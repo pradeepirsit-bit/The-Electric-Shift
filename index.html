@@ -17,7 +17,6 @@
       --green:#16a34a;
       --danger:#ef4444;
       --border:#e6e9ef;
-      --glass:rgba(11,116,255,0.06);
       --radius:12px;
       font-family:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;
     }
@@ -64,7 +63,6 @@
     .muted{color:var(--muted);font-size:13px;}
     .right-badge{font-size:12px;padding:6px 10px;border-radius:8px;background:#f3f6ff;border:1px solid #e6eefc;color:var(--accent-2);}
 
-    /* small helper layout to avoid overlap on narrow screens */
     .stacked-pair{display:flex;flex-direction:column;gap:8px;}
     @media (min-width:720px){ .stacked-pair{flex-direction:row;gap:12px;} .stacked-pair > div{flex:1;} }
   </style>
@@ -87,7 +85,7 @@
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
           <div>
             <div style="font-weight:700;">Enter your details and find your real savings</div>
-            <div class="hint">Essential fields only — financing included</div>
+            <div class="hint">Essential fields only — financing separated per vehicle</div>
           </div>
           <div class="right-badge">Minimal</div>
         </div>
@@ -147,20 +145,35 @@
             </div>
           </div>
 
-          <!-- Loan inputs -->
-          <div class="field-group">
-            <label>Loan details (applies to both vehicles)</label>
-            <div class="stacked-pair">
-              <div>
-                <label class="label-muted" for="loanInterest">Loan interest (%) annual</label>
-                <input id="loanInterest" type="number" min="0" step="0.01" value="9.5" />
-              </div>
-              <div>
-                <label class="label-muted" for="loanTenure">Loan tenure (years)</label>
-                <input id="loanTenure" type="number" min="1" max="10" step="1" value="5" />
+          <!-- Separate loan sections for Petrol and EV -->
+          <div class="two-col">
+            <div class="field-group">
+              <label>Petrol loan</label>
+              <div style="display:grid;gap:8px;">
+                <div>
+                  <label class="label-muted" for="petrolLoanInterest">Loan interest (%) annual</label>
+                  <input id="petrolLoanInterest" type="number" min="0" step="0.01" value="9.5" />
+                </div>
+                <div>
+                  <label class="label-muted" for="petrolLoanTenure">Loan tenure (years)</label>
+                  <input id="petrolLoanTenure" type="number" min="1" max="10" step="1" value="5" />
+                </div>
               </div>
             </div>
-            <div class="hint">Loan inputs are used to compute monthly loan payments added to monthly ownership cost</div>
+
+            <div class="field-group">
+              <label>EV loan</label>
+              <div style="display:grid;gap:8px;">
+                <div>
+                  <label class="label-muted" for="evLoanInterest">Loan interest (%) annual</label>
+                  <input id="evLoanInterest" type="number" min="0" step="0.01" value="8.5" />
+                </div>
+                <div>
+                  <label class="label-muted" for="evLoanTenure">Loan tenure (years)</label>
+                  <input id="evLoanTenure" type="number" min="1" max="10" step="1" value="5" />
+                </div>
+              </div>
+            </div>
           </div>
 
           <div class="field-group">
@@ -251,7 +264,7 @@
             <div>Petrol cost per km = petrol_price ÷ mileage (computed but not shown)</div>
             <div>EV cost per km = charging_cost ÷ range (computed but not shown)</div>
             <div>Monthly km = daily_km × 30</div>
-            <div>Loan monthly payment uses standard amortization formula</div>
+            <div>Loan monthly payment uses standard amortization formula per vehicle</div>
             <div>Total cost = (monthly fuel/charge + loan payment) × 12 × years</div>
           </div>
         </footer>
@@ -274,8 +287,11 @@
 
     const petrolPriceVehicleEl = document.getElementById('petrolPriceVehicle');
     const evPriceEl = document.getElementById('evPrice');
-    const loanInterestEl = document.getElementById('loanInterest');
-    const loanTenureEl = document.getElementById('loanTenure');
+
+    const petrolLoanInterestEl = document.getElementById('petrolLoanInterest');
+    const petrolLoanTenureEl = document.getElementById('petrolLoanTenure');
+    const evLoanInterestEl = document.getElementById('evLoanInterest');
+    const evLoanTenureEl = document.getElementById('evLoanTenure');
 
     // Result elements
     const petrolMonthlyEl = document.getElementById('petrolMonthly');
@@ -359,8 +375,11 @@
 
       const petrolVehiclePrice = Math.max(0, Number(petrolPriceVehicleEl.value) || 0);
       const evPrice = Math.max(0, Number(evPriceEl.value) || 0);
-      const loanInterest = Math.max(0, Number(loanInterestEl.value) || 0);
-      const loanTenureYears = Math.max(1, Number(loanTenureEl.value) || 1);
+
+      const petrolLoanInterest = Math.max(0, Number(petrolLoanInterestEl.value) || 0);
+      const petrolLoanTenureYears = Math.max(1, Number(petrolLoanTenureEl.value) || 1);
+      const evLoanInterest = Math.max(0, Number(evLoanInterestEl.value) || 0);
+      const evLoanTenureYears = Math.max(1, Number(evLoanTenureEl.value) || 1);
 
       // Hidden intermediate values
       const petrol_cost_per_km = petrolPrice / mileage;
@@ -370,9 +389,9 @@
       const petrol_fuel_monthly = monthly_km * petrol_cost_per_km;
       const ev_charge_monthly = monthly_km * ev_cost_per_km;
 
-      // Loan monthly payments for vehicle purchase
-      const petrolLoanMonthly = monthlyLoanPayment(petrolVehiclePrice, loanInterest, loanTenureYears);
-      const evLoanMonthly = monthlyLoanPayment(evPrice, loanInterest, loanTenureYears);
+      // Loan monthly payments for each vehicle using their own loan terms
+      const petrolLoanMonthly = monthlyLoanPayment(petrolVehiclePrice, petrolLoanInterest, petrolLoanTenureYears);
+      const evLoanMonthly = monthlyLoanPayment(evPrice, evLoanInterest, evLoanTenureYears);
 
       // Total monthly ownership cost = fuel/charge + loan payment
       const petrol_monthly_total = petrol_fuel_monthly + petrolLoanMonthly;
@@ -408,7 +427,6 @@
       costChart.update();
 
       // Build cumulative savings timeline (month-by-month) and find break-even
-      // cumulative_savings_month = cumulative_savings_prev + (petrol_monthly_total - ev_monthly_total)
       const months = analysisYears * 12;
       const monthlyDelta = petrol_monthly_total - ev_monthly_total;
       const labels = [];
@@ -423,7 +441,6 @@
         if (breakEvenMonth === -1 && cum >= 0) breakEvenMonth = m;
       }
 
-      // If never breaks even within analysisYears, compute approximate break-even in years if monthlyDelta > 0
       let breakEvenTextStr = '—';
       if (breakEvenMonth > 0) {
         const yearsBE = Math.floor((breakEvenMonth - 1) / 12);
@@ -432,7 +449,7 @@
       } else if (monthlyDelta <= 0) {
         breakEvenTextStr = 'No break-even within period';
       } else {
-        // monthlyDelta > 0 but breakEvenMonth not found because months=0 or other edge
+        // approximate if needed
         const approxMonths = Math.ceil(( (evPrice - petrolVehiclePrice) ) / monthlyDelta);
         if (approxMonths > 0) {
           const y = Math.floor(approxMonths / 12);
@@ -455,7 +472,8 @@
       dailyKmEl.value = 30; mileageEl.value = 18; petrolPriceEl.value = 100;
       chargeCostEl.value = 50; rangeEl.value = 60; yearsEl.value = 5;
       petrolPriceVehicleEl.value = 500000; evPriceEl.value = 700000;
-      loanInterestEl.value = 9.5; loanTenureEl.value = 5;
+      petrolLoanInterestEl.value = 9.5; petrolLoanTenureEl.value = 5;
+      evLoanInterestEl.value = 8.5; evLoanTenureEl.value = 5;
       yearsLabel.textContent = '5 years';
       calculateAll();
     });

@@ -1,248 +1,312 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Electric Shift | Professional Projection</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
-    <style>
-        body { 
-            font-family: 'Inter', sans-serif; 
-            background-color: #020617; 
-            color: #f8fafc; 
-            overflow-x: hidden;
-        }
-        .font-mono { font-family: 'JetBrains Mono', monospace; }
-        .dashboard-card {
-            background: #0f172a;
-            border: 1px solid #1e293b;
-            border-radius: 1.5rem;
-        }
-        /* Professional Compare Button */
-        .btn-compare {
-            background: #10b981;
-            color: #020617;
-            box-shadow: 0 0 20px rgba(16, 185, 129, 0.2);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .btn-compare:hover {
-            background: #34d399;
-            transform: scale(1.02);
-            box-shadow: 0 0 40px rgba(52, 211, 153, 0.4);
-        }
-        /* Slim Sliders */
-        input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; cursor: pointer; }
-        input[type=range]::-webkit-slider-runnable-track { height: 4px; background: #334155; border-radius: 10px; }
-        input[type=range]::-webkit-slider-thumb {
-            -webkit-appearance: none; height: 18px; width: 18px; border-radius: 50%;
-            background: #fff; margin-top: -7px; border: 2px solid #10b981;
-        }
-        input[type=number] { background: #020617; border: 1px solid #1e293b; }
-    </style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>The Electric Shift</title>
+  <style>
+    :root{
+      --bg:#f6f8fb; --card:#ffffff; --accent:#0b74ff; --muted:#6b7280;
+      --green:#16a34a; --danger:#ef4444; --glass: rgba(11,116,255,0.06);
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    }
+    body{margin:0;background:linear-gradient(180deg,#eef2ff 0%,var(--bg) 100%);padding:28px;color:#0f172a;}
+    .container{max-width:980px;margin:0 auto;}
+    header{display:flex;align-items:center;gap:16px;margin-bottom:18px;}
+    h1{font-size:20px;margin:0;}
+    p.lead{margin:0;color:var(--muted);font-size:14px;}
+    .grid{display:grid;grid-template-columns:1fr 360px;gap:18px;}
+    .card{background:var(--card);border-radius:12px;padding:18px;box-shadow:0 6px 18px rgba(15,23,42,0.06);}
+    .inputs{display:grid;gap:12px;}
+    label{font-size:13px;color:#0f172a;display:block;margin-bottom:6px;}
+    .row{display:flex;gap:12px;align-items:center;}
+    input[type="number"], select{width:100%;padding:10px;border-radius:8px;border:1px solid #e6e9ef;font-size:14px;}
+    .two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+    .small{font-size:12px;color:var(--muted);}
+    .slider-row{display:flex;align-items:center;gap:12px;}
+    input[type="range"]{width:100%;}
+    .cta{display:flex;gap:12px;align-items:center;margin-top:8px;}
+    .btn{background:var(--accent);color:white;padding:14px 18px;border-radius:12px;border:none;font-weight:600;cursor:pointer;box-shadow:0 8px 20px rgba(11,116,255,0.12);display:flex;align-items:center;gap:10px;}
+    .btn.secondary{background:transparent;color:var(--accent);border:1px solid var(--glass);box-shadow:none;}
+    .results{display:flex;flex-direction:column;gap:12px;}
+    .result-row{display:flex;justify-content:space-between;align-items:center;padding:12px;border-radius:10px;background:linear-gradient(90deg,#fff,#fbfdff);border:1px solid #f1f5f9;}
+    .big{font-size:20px;font-weight:700;}
+    .muted{color:var(--muted);font-size:13px;}
+    .savings{background:linear-gradient(90deg,#ecfdf5,#f0fdf4);border:1px solid rgba(16,185,129,0.12);color:var(--green);padding:12px;border-radius:10px;font-weight:700;font-size:18px;text-align:center;}
+    .badge{font-size:13px;padding:6px 10px;border-radius:999px;background:#f8fafc;border:1px solid #eef2ff;color:#0f172a;}
+    .chart-wrap{height:260px;padding:12px;background:linear-gradient(180deg,#ffffff,#fbfdff);border-radius:10px;border:1px solid #eef2ff;}
+    footer{margin-top:14px;color:var(--muted);font-size:13px;}
+    @media (max-width:880px){ .grid{grid-template-columns:1fr; } .card{padding:14px;} }
+  </style>
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-<body class="antialiased">
-
-    <header class="py-12 px-6 text-center">
-        <h1 class="text-4xl md:text-5xl font-black tracking-tighter text-white mb-2">
-            THE <span class="text-emerald-500">ELECTRIC</span> SHIFT
-        </h1>
-        <p class="text-slate-500 text-[10px] font-bold uppercase tracking-[0.4em]">2026 Mobility Intelligence Model</p>
+<body>
+  <div class="container">
+    <header>
+      <div>
+        <h1>The Electric Shift</h1>
+        <p class="lead">EV vs Petrol: See How Much Money You Save in 30 Seconds</p>
+      </div>
     </header>
 
-    <main class="max-w-6xl mx-auto px-6 pb-20">
-        
-        <!-- Section 1: Usage Profile (Top/Centered) -->
-        <div class="dashboard-card p-8 mb-8">
-            <div class="flex flex-col md:flex-row gap-12 items-center">
-                <!-- Daily Commute -->
-                <div class="flex-1 w-full">
-                    <div class="flex justify-between items-center mb-4">
-                        <label class="text-xs font-bold text-slate-400 uppercase tracking-widest">Daily Commute (Common)</label>
-                        <span class="text-2xl font-mono text-white" id="dailyVal">50 <span class="text-xs text-slate-500">KM</span></span>
-                    </div>
-                    <input type="range" id="dailyKm" min="5" max="150" value="50">
-                </div>
-                <!-- Weekend Commute (Optional) -->
-                <div class="flex-1 w-full">
-                    <label class="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-4">Weekend Commute (Optional)</label>
-                    <div class="relative">
-                        <input type="number" id="weekendKm" value="0" placeholder="Extra KM per week" 
-                               class="w-full p-4 rounded-xl font-mono text-xl outline-none focus:border-emerald-500 transition-all">
-                        <span class="absolute right-4 top-4 text-slate-600 text-xs uppercase font-bold">KM/Week</span>
-                    </div>
-                </div>
-            </div>
+    <div class="grid">
+      <!-- Left: Inputs -->
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+          <div>
+            <strong>Enter your details and find your real savings</strong>
+            <div class="small">Keep it simple — only essential fields</div>
+          </div>
+          <div class="badge">Quick estimate</div>
         </div>
 
-        <!-- Section 2: Parallel Vehicle Specs -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 mb-12">
-            
-            <!-- Left: Petrol Vehicle -->
-            <div class="dashboard-card p-8 border-l-4 border-l-rose-500">
-                <h2 class="text-sm font-black uppercase tracking-[0.2em] text-rose-500 mb-10">Petrol Vehicle Parameters</h2>
-                <div class="space-y-10">
-                    <div>
-                        <label class="block text-[10px] font-bold text-slate-500 uppercase mb-3">Petrol Price (₹/Litre)</label>
-                        <input type="number" id="petrolPrice" value="103" class="w-full p-4 rounded-xl font-mono text-xl outline-none focus:border-rose-500">
-                    </div>
-                    <div>
-                        <div class="flex justify-between items-end mb-4">
-                            <label class="text-xs font-bold text-slate-500 uppercase tracking-widest">Mileage</label>
-                            <span class="text-xl font-mono text-rose-400" id="mileageVal">45 <span class="text-xs text-slate-600">KM/L</span></span>
-                        </div>
-                        <input type="range" id="mileage" min="10" max="100" value="45">
-                    </div>
-                </div>
+        <div class="inputs">
+          <div>
+            <label><strong>Daily travel (km)</strong></label>
+            <input id="dailyKm" type="number" min="0" step="1" value="30" />
+          </div>
+
+          <div>
+            <label><strong>Vehicle Type</strong></label>
+            <select id="vehicleType">
+              <option value="car">Car</option>
+              <option value="ev_scooter">EV Scooter</option>
+              <option value="petrol_scooter">Petrol Scooter</option>
+            </select>
+            <div class="small">Vehicle type only affects label context; calculations use the fields below.</div>
+          </div>
+
+          <div class="two-col" style="margin-top:6px;">
+            <!-- Petrol -->
+            <div>
+              <label><strong>Petrol Vehicle</strong></label>
+              <div class="small">Left: Petrol inputs</div>
+              <div style="margin-top:8px;">
+                <label class="muted">Mileage (km per litre)</label>
+                <input id="mileage" type="number" min="1" step="0.1" value="18" />
+              </div>
+              <div style="margin-top:8px;">
+                <label class="muted">Petrol price (₹)</label>
+                <input id="petrolPrice" type="number" min="1" step="0.1" value="100" />
+              </div>
             </div>
 
-            <!-- Right: EV Vehicle -->
-            <div class="dashboard-card p-8 border-l-4 border-l-emerald-500">
-                <h2 class="text-sm font-black uppercase tracking-[0.2em] text-emerald-500 mb-10">Electric Drive Parameters</h2>
-                <div class="space-y-10">
-                    <div>
-                        <div class="flex justify-between items-end mb-4">
-                            <label class="text-xs font-bold text-slate-500 uppercase tracking-widest">Range per Charge</label>
-                            <span class="text-xl font-mono text-emerald-400" id="rangeVal">120 <span class="text-xs text-slate-600">KM</span></span>
-                        </div>
-                        <input type="range" id="evRange" min="40" max="250" value="120">
-                    </div>
-                    <div>
-                        <label class="block text-[10px] font-bold text-slate-500 uppercase mb-3">Cost per Full Charge (₹)</label>
-                        <input type="number" id="chargeCost" value="45" class="w-full p-4 rounded-xl font-mono text-xl outline-none focus:border-emerald-500">
-                    </div>
-                </div>
+            <!-- EV -->
+            <div>
+              <label><strong>EV Vehicle</strong></label>
+              <div class="small">Right: EV inputs</div>
+              <div style="margin-top:8px;">
+                <label class="muted">Cost per full charge (₹)</label>
+                <input id="chargeCost" type="number" min="0" step="0.1" value="50" />
+              </div>
+              <div style="margin-top:8px;">
+                <label class="muted">Range per charge (km)</label>
+                <input id="rangePerCharge" type="number" min="1" step="1" value="60" />
+              </div>
             </div>
+          </div>
+
+          <div>
+            <label><strong>Years of ownership</strong></label>
+            <div class="slider-row">
+              <input id="years" type="range" min="1" max="10" value="5" />
+              <div class="badge" id="yearsLabel">5 years</div>
+            </div>
+          </div>
+
+          <div class="cta">
+            <button id="calculateBtn" class="btn">Calculate Now ↓</button>
+            <button id="resetBtn" class="btn secondary">Reset</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Results + Chart -->
+      <div>
+        <div class="card results">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div>
+              <strong>Results</strong>
+              <div class="small">Clear comparison and total savings</div>
+            </div>
+            <div class="badge" id="summaryBadge">Monthly view</div>
+          </div>
+
+          <div class="result-row" style="margin-top:8px;">
+            <div>
+              <div class="muted">₹ Cost per km</div>
+              <div style="display:flex;gap:12px;margin-top:6px;">
+                <div><div class="muted">Petrol</div><div class="big" id="petrolPerKm">—</div></div>
+                <div><div class="muted">EV</div><div class="big" id="evPerKm">—</div></div>
+              </div>
+            </div>
+            <div style="text-align:right;">
+              <div class="muted">Daily km</div>
+              <div class="big" id="dailyKmBadge">— km</div>
+            </div>
+          </div>
+
+          <div class="result-row">
+            <div>
+              <div class="muted">Monthly cost</div>
+              <div style="display:flex;gap:12px;margin-top:6px;">
+                <div><div class="muted">Petrol</div><div class="big" id="petrolMonthly">—</div></div>
+                <div><div class="muted">EV</div><div class="big" id="evMonthly">—</div></div>
+              </div>
+            </div>
+            <div style="text-align:right;">
+              <div class="muted">Years</div>
+              <div class="big" id="yearsBadge">—</div>
+            </div>
+          </div>
+
+          <div class="result-row" style="align-items:stretch;">
+            <div style="flex:1;">
+              <div class="muted">Total cost over ownership</div>
+              <div style="display:flex;gap:12px;margin-top:6px;">
+                <div><div class="muted">Petrol</div><div class="big" id="petrolTotal">—</div></div>
+                <div><div class="muted">EV</div><div class="big" id="evTotal">—</div></div>
+              </div>
+            </div>
+            <div style="width:160px;">
+              <div class="muted">Total savings</div>
+              <div class="savings" id="totalSavings">—</div>
+            </div>
+          </div>
+
+          <div class="chart-wrap" style="margin-top:8px;">
+            <canvas id="costChart" height="200"></canvas>
+          </div>
+
         </div>
 
-        <!-- Additional Expenses (Fixed) -->
-        <div class="dashboard-card p-8 mb-12">
-            <h3 class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-6">Annual Fixed Expenses (Maintenance + Insurance)</h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="bg-[#020617] p-4 rounded-xl">
-                    <label class="text-[10px] text-slate-500 uppercase font-bold">Petrol Maint. (₹/Year)</label>
-                    <input type="number" id="pExtra" value="5000" class="w-full bg-transparent outline-none font-mono text-lg mt-1">
-                </div>
-                <div class="bg-[#020617] p-4 rounded-xl">
-                    <label class="text-[10px] text-slate-500 uppercase font-bold">EV Maint. (₹/Year)</label>
-                    <input type="number" id="eExtra" value="2000" class="w-full bg-transparent outline-none font-mono text-lg mt-1">
-                </div>
-            </div>
-        </div>
+        <footer style="margin-top:10px;">
+          <div class="small">Formulas used:</div>
+          <div class="small" style="margin-top:6px;">
+            <div>Petrol cost per km: <span style="font-weight:600;">\( \text{petrol\_cost\_per\_km} = \dfrac{\text{petrol\_price}}{\text{mileage}} \)</span></div>
+            <div>EV cost per km: <span style="font-weight:600;">\( \text{ev\_cost\_per\_km} = \dfrac{\text{charging\_cost}}{\text{range}} \)</span></div>
+            <div>Monthly km: <span style="font-weight:600;">daily\_km × 30</span></div>
+            <div>Total cost: <span style="font-weight:600;">monthly × 12 × years</span></div>
+          </div>
+        </footer>
+      </div>
+    </div>
+  </div>
 
-        <!-- Compare Button -->
-        <div class="flex justify-center mb-24">
-            <button onclick="calculate()" class="btn-compare px-24 py-6 rounded-full font-black text-xl uppercase tracking-widest">
-                Compare
-            </button>
-        </div>
+  <script>
+    // Elements
+    const dailyKmEl = document.getElementById('dailyKm');
+    const vehicleTypeEl = document.getElementById('vehicleType');
+    const mileageEl = document.getElementById('mileage');
+    const petrolPriceEl = document.getElementById('petrolPrice');
+    const chargeCostEl = document.getElementById('chargeCost');
+    const rangeEl = document.getElementById('rangePerCharge');
+    const yearsEl = document.getElementById('years');
+    const yearsLabel = document.getElementById('yearsLabel');
+    const calculateBtn = document.getElementById('calculateBtn');
+    const resetBtn = document.getElementById('resetBtn');
 
-        <!-- Results Area -->
-        <div id="results" class="hidden space-y-8 animate-in fade-in slide-in-from-bottom-10 duration-1000">
-            <div class="dashboard-card p-12 text-center">
-                <p class="text-emerald-500 text-xs font-bold uppercase tracking-[0.4em] mb-4">Projected 10-Year Benefit</p>
-                <h2 class="text-7xl md:text-9xl font-mono font-bold text-white tracking-tighter" id="totalSavings">₹0</h2>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-12 mt-12 pt-12 border-t border-slate-800">
-                    <div>
-                        <p class="text-slate-500 text-[10px] font-bold uppercase tracking-widest mb-2">Petrol Running Cost</p>
-                        <p class="text-4xl font-mono font-bold text-white" id="pCost">₹0.00</p>
-                    </div>
-                    <div>
-                        <p class="text-slate-500 text-[10px] font-bold uppercase tracking-widest mb-2">EV Running Cost</p>
-                        <p class="text-4xl font-mono font-bold text-emerald-500" id="eCost">₹0.00</p>
-                    </div>
-                </div>
-            </div>
+    // Result elements
+    const petrolPerKmEl = document.getElementById('petrolPerKm');
+    const evPerKmEl = document.getElementById('evPerKm');
+    const petrolMonthlyEl = document.getElementById('petrolMonthly');
+    const evMonthlyEl = document.getElementById('evMonthly');
+    const petrolTotalEl = document.getElementById('petrolTotal');
+    const evTotalEl = document.getElementById('evTotal');
+    const totalSavingsEl = document.getElementById('totalSavings');
+    const dailyKmBadge = document.getElementById('dailyKmBadge');
+    const yearsBadge = document.getElementById('yearsBadge');
 
-            <!-- 50k Metric Graph -->
-            <div class="dashboard-card p-8 md:p-12">
-                <h3 class="text-xl font-bold mb-8">Long-term Expense Projection</h3>
-                <div class="h-[450px]">
-                    <canvas id="mainChart"></canvas>
-                </div>
-            </div>
-        </div>
-    </main>
-
-    <script>
-        let chart;
-
-        // Input Sync
-        const sliders = {
-            'dailyKm': 'dailyVal',
-            'mileage': 'mileageVal',
-            'evRange': 'rangeVal'
-        };
-
-        Object.keys(sliders).forEach(id => {
-            document.getElementById(id).oninput = function() {
-                document.getElementById(sliders[id]).innerHTML = this.value + (id === 'mileage' ? ' <span class="text-xs text-slate-600">KM/L</span>' : ' <span class="text-xs text-slate-600">KM</span>');
-                if(!document.getElementById('results').classList.contains('hidden')) calculate();
-            }
-        });
-
-        function calculate() {
-            const pPrice = parseFloat(document.getElementById('petrolPrice').value);
-            const pMil = parseFloat(document.getElementById('mileage').value);
-            const eRan = parseFloat(document.getElementById('evRange').value);
-            const ePrice = parseFloat(document.getElementById('chargeCost').value);
-            const daily = parseFloat(document.getElementById('dailyKm').value);
-            const weekend = parseFloat(document.getElementById('weekendKm').value) || 0;
-            const pEx = parseFloat(document.getElementById('pExtra').value);
-            const eEx = parseFloat(document.getElementById('eExtra').value);
-
-            const annualKM = (daily * 365) + (weekend * 52);
-            const pKm = pPrice / pMil;
-            const eKm = ePrice / eRan;
-
-            const years = [3, 5, 10];
-            const pCosts = years.map(y => (pKm * annualKM * y) + (pEx * y));
-            const eCosts = years.map(y => (eKm * annualKM * y) + (eEx * y));
-
-            document.getElementById('results').classList.remove('hidden');
-            document.getElementById('totalSavings').innerText = "₹" + Math.round(pCosts[2] - eCosts[2]).toLocaleString('en-IN');
-            document.getElementById('pCost').innerText = "₹" + pKm.toFixed(2);
-            document.getElementById('eCost').innerText = "₹" + eKm.toFixed(2);
-
-            drawChart(pCosts, eCosts);
-            window.scrollTo({ top: document.getElementById('results').offsetTop - 50, behavior: 'smooth' });
+    // Chart setup
+    const ctx = document.getElementById('costChart').getContext('2d');
+    let costChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: ['Petrol', 'EV'],
+        datasets: [
+          {
+            label: 'Monthly cost (₹)',
+            data: [0,0],
+            backgroundColor: ['#ff7a7a','#60a5fa'],
+            borderRadius: 8
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          y: { beginAtZero:true, ticks:{precision:0} }
+        },
+        plugins: {
+          legend: { display:false },
+          tooltip: { callbacks: { label: ctx => `₹ ${Number(ctx.raw).toLocaleString()}` } }
         }
+      }
+    });
 
-        function drawChart(pData, eData) {
-            const ctx = document.getElementById('mainChart').getContext('2d');
-            if (chart) chart.destroy();
+    // Calculation logic (matches backend formulas)
+    function calculateAll(){
+      const dailyKm = Math.max(0, Number(dailyKmEl.value) || 0);
+      const mileage = Math.max(0.0001, Number(mileageEl.value) || 0.0001);
+      const petrolPrice = Math.max(0, Number(petrolPriceEl.value) || 0);
+      const chargeCost = Math.max(0, Number(chargeCostEl.value) || 0);
+      const rangePerCharge = Math.max(0.0001, Number(rangeEl.value) || 0.0001);
+      const years = Math.max(1, Number(yearsEl.value) || 1);
 
-            chart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: ['3 Years', '5 Years', '10 Years'],
-                    datasets: [
-                        { label: 'Petrol Total', data: pData, backgroundColor: '#334155', borderRadius: 8 },
-                        { label: 'Electric Total', data: eData, backgroundColor: '#10b981', borderRadius: 8 }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            grid: { color: '#1e293b' },
-                            ticks: { 
-                                stepSize: 50000,
-                                callback: v => '₹' + (v/1000) + 'k',
-                                color: '#64748b',
-                                font: { family: 'JetBrains Mono' }
-                            }
-                        },
-                        x: { grid: { display: false }, ticks: { color: '#f8fafc', font: { weight: 'bold' } } }
-                    }
-                }
-            });
-        }
-    </script>
+      // Formulas
+      const petrol_cost_per_km = petrolPrice / mileage;
+      const ev_cost_per_km = chargeCost / rangePerCharge;
+
+      const monthly_km = dailyKm * 30;
+      const petrol_monthly = monthly_km * petrol_cost_per_km;
+      const ev_monthly = monthly_km * ev_cost_per_km;
+
+      const total_petrol = petrol_monthly * 12 * years;
+      const total_ev = ev_monthly * 12 * years;
+
+      const savings = total_petrol - total_ev;
+
+      // Update UI (formatted)
+      petrolPerKmEl.textContent = `₹ ${petrol_cost_per_km.toFixed(2)}`;
+      evPerKmEl.textContent = `₹ ${ev_cost_per_km.toFixed(2)}`;
+      petrolMonthlyEl.textContent = `₹ ${Math.round(petrol_monthly).toLocaleString()}`;
+      evMonthlyEl.textContent = `₹ ${Math.round(ev_monthly).toLocaleString()}`;
+      petrolTotalEl.textContent = `₹ ${Math.round(total_petrol).toLocaleString()}`;
+      evTotalEl.textContent = `₹ ${Math.round(total_ev).toLocaleString()}`;
+      totalSavingsEl.textContent = `₹ ${Math.round(savings).toLocaleString()}`;
+      dailyKmBadge.textContent = `${dailyKm} km`;
+      yearsBadge.textContent = `${years} years`;
+
+      // Color savings: if negative, show red and prefix with minus
+      if (savings >= 0) {
+        totalSavingsEl.style.color = 'var(--green)';
+        totalSavingsEl.style.background = 'linear-gradient(90deg,#ecfdf5,#f0fdf4)';
+        totalSavingsEl.style.border = '1px solid rgba(16,185,129,0.12)';
+      } else {
+        totalSavingsEl.style.color = 'var(--danger)';
+        totalSavingsEl.style.background = 'linear-gradient(90deg,#fff5f5,#fff7f7)';
+        totalSavingsEl.style.border = '1px solid rgba(239,68,68,0.08)';
+      }
+
+      // Update chart (monthly comparison)
+      costChart.data.datasets[0].data = [Math.round(petrol_monthly), Math.round(ev_monthly)];
+      costChart.update();
+    }
+
+    // Events
+    yearsEl.addEventListener('input', () => { yearsLabel.textContent = `${yearsEl.value} years`; });
+    calculateBtn.addEventListener('click', () => { calculateAll(); });
+    resetBtn.addEventListener('click', () => {
+      dailyKmEl.value = 30; mileageEl.value = 18; petrolPriceEl.value = 100;
+      chargeCostEl.value = 50; rangeEl.value = 60; yearsEl.value = 5;
+      yearsLabel.textContent = '5 years';
+      calculateAll();
+    });
+
+    // Initial calculation
+    calculateAll();
+  </script>
 </body>
 </html>

@@ -133,18 +133,16 @@
             <div class="badge" id="summaryBadge">Monthly view</div>
           </div>
 
+          <!-- Daily / Years summary -->
           <div class="result-row" style="margin-top:8px;">
             <div>
-              <div class="muted">₹ Cost per km</div>
+              <div class="muted">Summary</div>
               <div style="display:flex;gap:12px;margin-top:6px;">
-                <div><div class="muted">Petrol</div><div class="big" id="petrolPerKm">—</div></div>
-                <div><div class="muted">EV</div><div class="big" id="evPerKm">—</div></div>
+                <div><div class="muted">Daily km</div><div class="big" id="dailyKmBadge">— km</div></div>
+                <div><div class="muted">Years</div><div class="big" id="yearsBadge">—</div></div>
               </div>
             </div>
-            <div style="text-align:right;">
-              <div class="muted">Daily km</div>
-              <div class="big" id="dailyKmBadge">— km</div>
-            </div>
+            <div class="badge" style="height:fit-content;align-self:center;">Quick compare</div>
           </div>
 
           <div class="result-row">
@@ -156,8 +154,8 @@
               </div>
             </div>
             <div style="text-align:right;">
-              <div class="muted">Years</div>
-              <div class="big" id="yearsBadge">—</div>
+              <div class="muted">Monthly km</div>
+              <div class="big" id="monthlyKmBadge">—</div>
             </div>
           </div>
 
@@ -184,10 +182,10 @@
         <footer style="margin-top:10px;">
           <div class="small">Formulas used:</div>
           <div class="small" style="margin-top:6px;">
-            <div>Petrol cost per km: <span style="font-weight:600;">\( \text{petrol\_cost\_per\_km} = \dfrac{\text{petrol\_price}}{\text{mileage}} \)</span></div>
-            <div>EV cost per km: <span style="font-weight:600;">\( \text{ev\_cost\_per\_km} = \dfrac{\text{charging\_cost}}{\text{range}} \)</span></div>
-            <div>Monthly km: <span style="font-weight:600;">daily\_km × 30</span></div>
-            <div>Total cost: <span style="font-weight:600;">monthly × 12 × years</span></div>
+            <div>Petrol cost per km: petrol_price ÷ mileage (hidden in UI)</div>
+            <div>EV cost per km: charging_cost ÷ range (hidden in UI)</div>
+            <div>Monthly km: daily_km × 30</div>
+            <div>Total cost: monthly × 12 × years</div>
           </div>
         </footer>
       </div>
@@ -208,8 +206,6 @@
     const resetBtn = document.getElementById('resetBtn');
 
     // Result elements
-    const petrolPerKmEl = document.getElementById('petrolPerKm');
-    const evPerKmEl = document.getElementById('evPerKm');
     const petrolMonthlyEl = document.getElementById('petrolMonthly');
     const evMonthlyEl = document.getElementById('evMonthly');
     const petrolTotalEl = document.getElementById('petrolTotal');
@@ -217,6 +213,7 @@
     const totalSavingsEl = document.getElementById('totalSavings');
     const dailyKmBadge = document.getElementById('dailyKmBadge');
     const yearsBadge = document.getElementById('yearsBadge');
+    const monthlyKmBadge = document.getElementById('monthlyKmBadge');
 
     // Chart setup
     const ctx = document.getElementById('costChart').getContext('2d');
@@ -255,7 +252,7 @@
       const rangePerCharge = Math.max(0.0001, Number(rangeEl.value) || 0.0001);
       const years = Math.max(1, Number(yearsEl.value) || 1);
 
-      // Formulas
+      // Hidden intermediate values (still computed for accuracy)
       const petrol_cost_per_km = petrolPrice / mileage;
       const ev_cost_per_km = chargeCost / rangePerCharge;
 
@@ -268,9 +265,7 @@
 
       const savings = total_petrol - total_ev;
 
-      // Update UI (formatted)
-      petrolPerKmEl.textContent = `₹ ${petrol_cost_per_km.toFixed(2)}`;
-      evPerKmEl.textContent = `₹ ${ev_cost_per_km.toFixed(2)}`;
+      // Update UI (formatted) — cost per km intentionally hidden
       petrolMonthlyEl.textContent = `₹ ${Math.round(petrol_monthly).toLocaleString()}`;
       evMonthlyEl.textContent = `₹ ${Math.round(ev_monthly).toLocaleString()}`;
       petrolTotalEl.textContent = `₹ ${Math.round(total_petrol).toLocaleString()}`;
@@ -278,6 +273,7 @@
       totalSavingsEl.textContent = `₹ ${Math.round(savings).toLocaleString()}`;
       dailyKmBadge.textContent = `${dailyKm} km`;
       yearsBadge.textContent = `${years} years`;
+      monthlyKmBadge.textContent = `${monthly_km.toLocaleString()} km`;
 
       // Color savings: if negative, show red and prefix with minus
       if (savings >= 0) {

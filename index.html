@@ -4,50 +4,89 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>The Electric Shift</title>
+
+  <!-- Minimal professional font -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+
   <style>
     :root{
-      --bg:#f6f8fb; --card:#ffffff; --accent:#0b74ff; --muted:#6b7280;
-      --green:#16a34a; --danger:#ef4444; --glass: rgba(11,116,255,0.06);
-      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      --bg:#f5f7fb;
+      --card:#ffffff;
+      --muted:#6b7280;
+      --accent:#0b74ff;
+      --accent-2:#2563eb;
+      --green:#16a34a;
+      --danger:#ef4444;
+      --border: #e6e9ef;
+      --glass: rgba(11,116,255,0.06);
+      --radius:12px;
+      font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      color-scheme: light;
     }
-    body{margin:0;background:linear-gradient(180deg,#eef2ff 0%,var(--bg) 100%);padding:28px;color:#0f172a;}
-    .container{max-width:980px;margin:0 auto;}
-    header{display:flex;align-items:center;gap:16px;margin-bottom:18px;}
-    h1{font-size:20px;margin:0;}
-    p.lead{margin:0;color:var(--muted);font-size:14px;}
-    .grid{display:grid;grid-template-columns:1fr 360px;gap:18px;}
-    .card{background:var(--card);border-radius:12px;padding:18px;box-shadow:0 6px 18px rgba(15,23,42,0.06);}
-    .inputs{display:grid;gap:12px;}
-    label{font-size:13px;color:#0f172a;display:block;margin-bottom:6px;}
-    .row{display:flex;gap:12px;align-items:center;}
-    input[type="number"], select{width:100%;padding:10px;border-radius:8px;border:1px solid #e6e9ef;font-size:14px;}
-    .two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
-    .small{font-size:12px;color:var(--muted);}
-    .slider-row{display:flex;align-items:center;gap:12px;}
+
+    /* Page layout */
+    html,body{height:100%;margin:0;background:linear-gradient(180deg,#f8fbff 0%,var(--bg) 100%);-webkit-font-smoothing:antialiased;}
+    .wrap{max-width:980px;margin:28px auto;padding:20px;}
+    header{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:18px;}
+    header .title{display:flex;flex-direction:column;gap:6px;}
+    h1{font-size:20px;margin:0;font-weight:700;color:#0f172a;}
+    p.lead{margin:0;color:var(--muted);font-size:13px;}
+
+    /* Grid */
+    .grid{display:grid;grid-template-columns:1fr 380px;gap:18px;align-items:start;}
+    @media (max-width:920px){ .grid{grid-template-columns:1fr;} }
+
+    /* Card */
+    .card{background:var(--card);border-radius:var(--radius);padding:18px;border:1px solid var(--border);box-shadow:0 6px 18px rgba(15,23,42,0.04);}
+    .card.compact{padding:14px;}
+
+    /* Inputs */
+    .inputs{display:grid;gap:14px;}
+    label{font-size:13px;color:#0f172a;display:block;margin-bottom:6px;font-weight:600;}
+    .hint{font-size:12px;color:var(--muted);margin-top:4px;}
+    input[type="number"], select{width:100%;padding:10px;border-radius:10px;border:1px solid var(--border);font-size:14px;background:#fff;box-sizing:border-box;}
     input[type="range"]{width:100%;}
-    .cta{display:flex;gap:12px;align-items:center;margin-top:8px;}
-    .btn{background:var(--accent);color:white;padding:14px 18px;border-radius:12px;border:none;font-weight:600;cursor:pointer;box-shadow:0 8px 20px rgba(11,116,255,0.12);display:flex;align-items:center;gap:10px;}
-    .btn.secondary{background:transparent;color:var(--accent);border:1px solid var(--glass);box-shadow:none;}
+    .two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start;}
+    .field-group{display:flex;flex-direction:column;gap:8px;}
+    .field-row{display:flex;gap:12px;align-items:center;}
+    .small-badge{font-size:12px;padding:6px 10px;border-radius:999px;background:#f8fafc;border:1px solid #eef2ff;color:#0f172a;align-self:flex-start;}
+
+    /* Buttons */
+    .cta{display:flex;gap:12px;align-items:center;margin-top:6px;}
+    .btn{background:var(--accent);color:white;padding:12px 16px;border-radius:10px;border:none;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:8px;box-shadow:0 8px 20px rgba(11,116,255,0.08);}
+    .btn.secondary{background:transparent;color:var(--accent-2);border:1px solid var(--border);box-shadow:none;font-weight:600;}
+
+    /* Results */
     .results{display:flex;flex-direction:column;gap:12px;}
     .result-row{display:flex;justify-content:space-between;align-items:center;padding:12px;border-radius:10px;background:linear-gradient(90deg,#fff,#fbfdff);border:1px solid #f1f5f9;}
-    .big{font-size:20px;font-weight:700;}
+    .result-row.stack{flex-direction:column;align-items:flex-start;gap:10px;}
+    .label-muted{font-size:12px;color:var(--muted);}
+    .big{font-size:18px;font-weight:700;color:#0f172a;}
+    .savings{background:linear-gradient(90deg,#ecfdf5,#f0fdf4);border:1px solid rgba(16,185,129,0.12);color:var(--green);padding:10px;border-radius:10px;font-weight:700;font-size:16px;text-align:center;min-width:120px;}
+
+    /* Chart container */
+    .chart-wrap{height:260px;padding:12px;background:linear-gradient(180deg,#ffffff,#fbfdff);border-radius:10px;border:1px solid #eef2ff;display:flex;align-items:center;justify-content:center;}
+
+    /* Footer formulas */
+    footer{margin-top:12px;color:var(--muted);font-size:12px;}
+
+    /* Accessibility & small tweaks */
+    input:focus, select:focus{outline:none;box-shadow:0 0 0 4px rgba(11,116,255,0.06);border-color:var(--accent-2);}
     .muted{color:var(--muted);font-size:13px;}
-    .savings{background:linear-gradient(90deg,#ecfdf5,#f0fdf4);border:1px solid rgba(16,185,129,0.12);color:var(--green);padding:12px;border-radius:10px;font-weight:700;font-size:18px;text-align:center;}
-    .badge{font-size:13px;padding:6px 10px;border-radius:999px;background:#f8fafc;border:1px solid #eef2ff;color:#0f172a;}
-    .chart-wrap{height:260px;padding:12px;background:linear-gradient(180deg,#ffffff,#fbfdff);border-radius:10px;border:1px solid #eef2ff;}
-    footer{margin-top:14px;color:var(--muted);font-size:13px;}
-    @media (max-width:880px){ .grid{grid-template-columns:1fr; } .card{padding:14px;} }
+    .right-badge{font-size:12px;padding:6px 10px;border-radius:8px;background:#f3f6ff;border:1px solid #e6eefc;color:var(--accent-2);}
   </style>
+
   <!-- Chart.js CDN -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-  <div class="container">
+  <div class="wrap">
     <header>
-      <div>
+      <div class="title">
         <h1>The Electric Shift</h1>
         <p class="lead">EV vs Petrol: See How Much Money You Save in 30 Seconds</p>
       </div>
+      <div class="small-badge">Enter details — quick estimate</div>
     </header>
 
     <div class="grid">
@@ -55,137 +94,141 @@
       <div class="card">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
           <div>
-            <strong>Enter your details and find your real savings</strong>
-            <div class="small">Keep it simple — only essential fields</div>
+            <div style="font-weight:700;">Enter your details and find your real savings</div>
+            <div class="hint">Essential fields only — minimal and professional</div>
           </div>
-          <div class="badge">Quick estimate</div>
+          <div class="right-badge">Quick</div>
         </div>
 
         <div class="inputs">
-          <div>
-            <label><strong>Daily travel (km)</strong></label>
-            <input id="dailyKm" type="number" min="0" step="1" value="30" />
+          <div class="field-group">
+            <label for="dailyKm">Daily travel (km)</label>
+            <input id="dailyKm" type="number" min="0" step="1" value="30" aria-label="Daily travel in kilometers" />
           </div>
 
-          <div>
-            <label><strong>Vehicle Type</strong></label>
-            <select id="vehicleType">
+          <div class="field-group">
+            <label for="vehicleType">Vehicle Type</label>
+            <select id="vehicleType" aria-label="Vehicle type">
               <option value="car">Car</option>
               <option value="ev_scooter">EV Scooter</option>
               <option value="petrol_scooter">Petrol Scooter</option>
             </select>
-            <div class="small">Vehicle type only affects label context; calculations use the fields below.</div>
+            <div class="hint">Type is for context only; calculations use the numeric inputs below.</div>
           </div>
 
-          <div class="two-col" style="margin-top:6px;">
-            <!-- Petrol -->
-            <div>
-              <label><strong>Petrol Vehicle</strong></label>
-              <div class="small">Left: Petrol inputs</div>
-              <div style="margin-top:8px;">
-                <label class="muted">Mileage (km per litre)</label>
-                <input id="mileage" type="number" min="1" step="0.1" value="18" />
-              </div>
-              <div style="margin-top:8px;">
-                <label class="muted">Petrol price (₹)</label>
-                <input id="petrolPrice" type="number" min="1" step="0.1" value="100" />
+          <!-- Two-column inputs with clear stacking to avoid overlap -->
+          <div class="two-col" aria-hidden="false">
+            <!-- Petrol column -->
+            <div class="field-group" style="min-width:0;">
+              <label>Petrol Vehicle</label>
+              <div class="field-row" style="flex-direction:column;align-items:stretch;">
+                <div>
+                  <label class="label-muted" for="mileage">Mileage (km per litre)</label>
+                  <input id="mileage" type="number" min="1" step="0.1" value="18" aria-label="Mileage kilometers per litre" />
+                </div>
+                <div style="margin-top:8px;">
+                  <label class="label-muted" for="petrolPrice">Petrol price (₹)</label>
+                  <input id="petrolPrice" type="number" min="1" step="0.1" value="100" aria-label="Petrol price in rupees" />
+                </div>
               </div>
             </div>
 
-            <!-- EV -->
-            <div>
-              <label><strong>EV Vehicle</strong></label>
-              <div class="small">Right: EV inputs</div>
-              <div style="margin-top:8px;">
-                <label class="muted">Cost per full charge (₹)</label>
-                <input id="chargeCost" type="number" min="0" step="0.1" value="50" />
-              </div>
-              <div style="margin-top:8px;">
-                <label class="muted">Range per charge (km)</label>
-                <input id="rangePerCharge" type="number" min="1" step="1" value="60" />
+            <!-- EV column -->
+            <div class="field-group" style="min-width:0;">
+              <label>EV Vehicle</label>
+              <div class="field-row" style="flex-direction:column;align-items:stretch;">
+                <div>
+                  <label class="label-muted" for="chargeCost">Cost per full charge (₹)</label>
+                  <input id="chargeCost" type="number" min="0" step="0.1" value="50" aria-label="Cost per full charge in rupees" />
+                </div>
+                <div style="margin-top:8px;">
+                  <label class="label-muted" for="rangePerCharge">Range per charge (km)</label>
+                  <input id="rangePerCharge" type="number" min="1" step="1" value="60" aria-label="Range per full charge in kilometers" />
+                </div>
               </div>
             </div>
           </div>
 
-          <div>
-            <label><strong>Years of ownership</strong></label>
-            <div class="slider-row">
-              <input id="years" type="range" min="1" max="10" value="5" />
-              <div class="badge" id="yearsLabel">5 years</div>
+          <div class="field-group">
+            <label for="years">Years of ownership</label>
+            <div style="display:flex;gap:12px;align-items:center;">
+              <input id="years" type="range" min="1" max="10" value="5" aria-label="Years of ownership" />
+              <div class="right-badge" id="yearsLabel">5 years</div>
             </div>
           </div>
 
           <div class="cta">
-            <button id="calculateBtn" class="btn">Calculate Now ↓</button>
-            <button id="resetBtn" class="btn secondary">Reset</button>
+            <button id="calculateBtn" class="btn" aria-label="Calculate savings">Calculate Now ↓</button>
+            <button id="resetBtn" class="btn secondary" aria-label="Reset form">Reset</button>
           </div>
         </div>
       </div>
 
       <!-- Right: Results + Chart -->
       <div>
-        <div class="card results">
-          <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div class="card results compact">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
             <div>
-              <strong>Results</strong>
-              <div class="small">Clear comparison and total savings</div>
+              <div style="font-weight:700;">Results</div>
+              <div class="hint">Clear comparison and total savings</div>
             </div>
-            <div class="badge" id="summaryBadge">Monthly view</div>
+            <div class="small-badge" id="summaryBadge">Monthly view</div>
           </div>
 
-          <!-- Daily / Years summary -->
-          <div class="result-row" style="margin-top:8px;">
-            <div>
-              <div class="muted">Summary</div>
-              <div style="display:flex;gap:12px;margin-top:6px;">
-                <div><div class="muted">Daily km</div><div class="big" id="dailyKmBadge">— km</div></div>
-                <div><div class="muted">Years</div><div class="big" id="yearsBadge">—</div></div>
-              </div>
-            </div>
-            <div class="badge" style="height:fit-content;align-self:center;">Quick compare</div>
-          </div>
-
+          <!-- Summary row -->
           <div class="result-row">
             <div>
-              <div class="muted">Monthly cost</div>
-              <div style="display:flex;gap:12px;margin-top:6px;">
-                <div><div class="muted">Petrol</div><div class="big" id="petrolMonthly">—</div></div>
-                <div><div class="muted">EV</div><div class="big" id="evMonthly">—</div></div>
+              <div class="label-muted">Summary</div>
+              <div style="display:flex;gap:12px;margin-top:8px;">
+                <div><div class="label-muted">Daily km</div><div class="big" id="dailyKmBadge">— km</div></div>
+                <div><div class="label-muted">Years</div><div class="big" id="yearsBadge">—</div></div>
+              </div>
+            </div>
+            <div class="small-badge">Quick compare</div>
+          </div>
+
+          <!-- Monthly cost -->
+          <div class="result-row">
+            <div>
+              <div class="label-muted">Monthly cost</div>
+              <div style="display:flex;gap:12px;margin-top:8px;">
+                <div><div class="label-muted">Petrol</div><div class="big" id="petrolMonthly">—</div></div>
+                <div><div class="label-muted">EV</div><div class="big" id="evMonthly">—</div></div>
               </div>
             </div>
             <div style="text-align:right;">
-              <div class="muted">Monthly km</div>
+              <div class="label-muted">Monthly km</div>
               <div class="big" id="monthlyKmBadge">—</div>
             </div>
           </div>
 
+          <!-- Total cost & savings -->
           <div class="result-row" style="align-items:stretch;">
             <div style="flex:1;">
-              <div class="muted">Total cost over ownership</div>
-              <div style="display:flex;gap:12px;margin-top:6px;">
-                <div><div class="muted">Petrol</div><div class="big" id="petrolTotal">—</div></div>
-                <div><div class="muted">EV</div><div class="big" id="evTotal">—</div></div>
+              <div class="label-muted">Total cost over ownership</div>
+              <div style="display:flex;gap:12px;margin-top:8px;">
+                <div><div class="label-muted">Petrol</div><div class="big" id="petrolTotal">—</div></div>
+                <div><div class="label-muted">EV</div><div class="big" id="evTotal">—</div></div>
               </div>
             </div>
-            <div style="width:160px;">
-              <div class="muted">Total savings</div>
+            <div style="width:150px;">
+              <div class="label-muted">Total savings</div>
               <div class="savings" id="totalSavings">—</div>
             </div>
           </div>
 
           <div class="chart-wrap" style="margin-top:8px;">
-            <canvas id="costChart" height="200"></canvas>
+            <canvas id="costChart" height="200" aria-label="Bar chart comparing monthly cost for petrol and EV"></canvas>
           </div>
-
         </div>
 
-        <footer style="margin-top:10px;">
-          <div class="small">Formulas used:</div>
-          <div class="small" style="margin-top:6px;">
-            <div>Petrol cost per km: petrol_price ÷ mileage (hidden in UI)</div>
-            <div>EV cost per km: charging_cost ÷ range (hidden in UI)</div>
-            <div>Monthly km: daily_km × 30</div>
-            <div>Total cost: monthly × 12 × years</div>
+        <footer>
+          <div class="label-muted">Formulas used (hidden details computed):</div>
+          <div style="margin-top:6px;color:var(--muted);font-size:12px;">
+            <div>Petrol cost per km = petrol_price ÷ mileage (computed but not shown)</div>
+            <div>EV cost per km = charging_cost ÷ range (computed but not shown)</div>
+            <div>Monthly km = daily_km × 30</div>
+            <div>Total cost = monthly × 12 × years</div>
           </div>
         </footer>
       </div>
@@ -252,7 +295,7 @@
       const rangePerCharge = Math.max(0.0001, Number(rangeEl.value) || 0.0001);
       const years = Math.max(1, Number(yearsEl.value) || 1);
 
-      // Hidden intermediate values (still computed for accuracy)
+      // Hidden intermediate values (computed but not shown)
       const petrol_cost_per_km = petrolPrice / mileage;
       const ev_cost_per_km = chargeCost / rangePerCharge;
 
@@ -265,7 +308,7 @@
 
       const savings = total_petrol - total_ev;
 
-      // Update UI (formatted) — cost per km intentionally hidden
+      // Update UI (formatted)
       petrolMonthlyEl.textContent = `₹ ${Math.round(petrol_monthly).toLocaleString()}`;
       evMonthlyEl.textContent = `₹ ${Math.round(ev_monthly).toLocaleString()}`;
       petrolTotalEl.textContent = `₹ ${Math.round(total_petrol).toLocaleString()}`;
@@ -275,7 +318,7 @@
       yearsBadge.textContent = `${years} years`;
       monthlyKmBadge.textContent = `${monthly_km.toLocaleString()} km`;
 
-      // Color savings: if negative, show red and prefix with minus
+      // Color savings: green if positive, red if negative
       if (savings >= 0) {
         totalSavingsEl.style.color = 'var(--green)';
         totalSavingsEl.style.background = 'linear-gradient(90deg,#ecfdf5,#f0fdf4)';

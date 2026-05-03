@@ -3,101 +3,745 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>The Electric Shift — PWA</title>
+  <title>The Electric Shift — EV vs Petrol Calculator (PWA)</title>
 
-  <!-- Manifest inline -->
-  <link rel="manifest" href="data:application/manifest+json,{
-    &quot;name&quot;:&quot;The Electric Shift&quot;,
-    &quot;short_name&quot;:&quot;EV Savings&quot;,
-    &quot;start_url&quot;:&quot;./index.html&quot;,
-    &quot;display&quot;:&quot;standalone&quot;,
-    &quot;background_color&quot;:&quot;#f5f7fb&quot;,
-    &quot;theme_color&quot;:&quot;#0b74ff&quot;,
-    &quot;orientation&quot;:&quot;portrait&quot;,
-    &quot;icons&quot;:[
-      {&quot;src&quot;:&quot;icons/icon-192.png&quot;,&quot;sizes&quot;:&quot;192x192&quot;,&quot;type&quot;:&quot;image/png&quot;},
-      {&quot;src&quot;:&quot;icons/icon-512.png&quot;,&quot;sizes&quot;:&quot;512x512&quot;,&quot;type&quot;:&quot;image/png&quot;}
-    ]
-  }">
+  <!-- Inline manifest (data URI) -->
+  <link rel="manifest" href='data:application/manifest+json,{"name":"The Electric Shift","short_name":"EV Savings","start_url":"./index.html","display":"standalone","background_color":"#f5f7fb","theme_color":"#0b74ff","orientation":"portrait","icons":[{"src":"icons/icon-192.png","sizes":"192x192","type":"image/png"},{"src":"icons/icon-512.png","sizes":"512x512","type":"image/png"}]}' />
   <meta name="theme-color" content="#0b74ff">
 
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
   <style>
-    /* Keep your calculator CSS here */
-    #installBanner {
-      display:none;
-      position:fixed;
-      bottom:20px;
-      left:50%;
-      transform:translateX(-50%);
-      background:#0b74ff;
-      color:#fff;
-      padding:12px 20px;
-      border-radius:8px;
-      font-weight:600;
-      cursor:pointer;
-      box-shadow:0 4px 12px rgba(0,0,0,0.2);
-      z-index:9999;
+    :root{
+      --bg:#f5f7fb; --card:#ffffff; --muted:#6b7280; --accent:#0b74ff; --accent-2:#2563eb;
+      --green:#16a34a; --danger:#ef4444; --border:#e6e9ef; --radius:12px;
+      font-family:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;
     }
+    html,body{height:100%;margin:0;background:linear-gradient(180deg,#f8fbff 0%,var(--bg) 100%);-webkit-font-smoothing:antialiased;color:#0f172a;}
+    .wrap{max-width:1100px;margin:20px auto;padding:18px;}
+    header{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:18px;}
+    .title{display:flex;flex-direction:column;gap:6px;}
+    h1{font-size:20px;margin:0;font-weight:700;}
+    p.lead{margin:0;color:var(--muted);font-size:13px;}
+
+    .grid{display:grid;grid-template-columns:1fr 420px;gap:18px;align-items:start;}
+    @media (max-width:1100px){ .grid{grid-template-columns:1fr;} }
+
+    .card{background:var(--card);border-radius:var(--radius);padding:16px;border:1px solid var(--border);box-shadow:0 8px 24px rgba(15,23,42,0.04);}
+    .card.compact{padding:12px;}
+
+    .inputs{display:grid;gap:12px;}
+    label{font-size:13px;color:#0f172a;display:block;margin-bottom:6px;font-weight:600;}
+    .hint{font-size:12px;color:var(--muted);margin-top:4px;}
+    input[type="number"], select{width:100%;padding:10px;border-radius:10px;border:1px solid var(--border);font-size:14px;background:#fff;box-sizing:border-box;}
+    input[type="range"]{width:100%;}
+    .two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start;}
+    .stacked{display:flex;flex-direction:column;gap:8px;}
+    .subgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;}
+    .mini{font-size:13px;color:var(--muted);}
+    .cta{display:flex;gap:12px;align-items:center;margin-top:6px;}
+    .btn{background:var(--accent);color:white;padding:12px 16px;border-radius:10px;border:none;font-weight:700;cursor:pointer;box-shadow:0 8px 20px rgba(11,116,255,0.08);}
+    .btn.secondary{background:transparent;color:var(--accent-2);border:1px solid var(--border);box-shadow:none;font-weight:600;padding:10px 14px;}
+    .btn.ghost{background:transparent;border:1px dashed var(--border);color:var(--muted);padding:8px 12px;border-radius:8px;cursor:pointer;}
+
+    .results{display:flex;flex-direction:column;gap:12px;}
+    .result-row{display:flex;justify-content:space-between;align-items:center;padding:12px;border-radius:10px;background:linear-gradient(90deg,#fff,#fbfdff);border:1px solid #f1f5f9;}
+    .label-muted{font-size:12px;color:var(--muted);}
+    .big{font-size:18px;font-weight:700;color:#0f172a;}
+    .savings{background:linear-gradient(90deg,#ecfdf5,#f0fdf4);border:1px solid rgba(16,185,129,0.12);color:var(--green);padding:10px;border-radius:10px;font-weight:700;font-size:16px;text-align:center;min-width:120px;}
+
+    .chart-wrap{height:240px;padding:12px;background:linear-gradient(180deg,#ffffff,#fbfdff);border-radius:10px;border:1px solid #eef2ff;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;}
+
+    footer{margin-top:12px;color:var(--muted);font-size:12px;}
+
+    input:focus, select:focus{outline:none;box-shadow:0 0 0 4px rgba(11,116,255,0.06);border-color:var(--accent-2);}
+    .right-badge{font-size:12px;padding:6px 10px;border-radius:8px;background:#f3f6ff;border:1px solid #e6eefc;color:var(--accent-2);}
+
+    /* Install banner */
+    #installBanner{display:none;position:fixed;left:50%;transform:translateX(-50%);bottom:20px;background:var(--accent);color:#fff;padding:12px 18px;border-radius:10px;box-shadow:0 8px 24px rgba(11,116,255,0.12);z-index:9999;cursor:pointer;font-weight:700;}
+    #installDismiss{margin-left:12px;background:transparent;border:none;color:rgba(255,255,255,0.9);font-weight:600;cursor:pointer;padding:6px 8px;border-radius:6px;}
+    @media (max-width:520px){ #installBanner{left:12px;transform:none;right:12px;width:auto;} .grid{gap:12px;} }
   </style>
 </head>
 <body>
-  <!-- Calculator UI here -->
   <div class="wrap">
-    <!-- ... existing calculator content ... -->
+    <header>
+      <div class="title">
+        <h1>The Electric Shift</h1>
+        <p class="lead">EV vs Petrol: fast savings, maintenance and EMI-aware comparison</p>
+      </div>
+      <div class="mini right-badge">Quick estimate</div>
+    </header>
+
+    <div class="grid">
+      <!-- Left: Inputs -->
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+          <div>
+            <div style="font-weight:700;">Enter your details</div>
+            <div class="hint">Minimal inputs + maintenance breakdown + optional loan calculator</div>
+          </div>
+          <div class="right-badge">Mobile friendly</div>
+        </div>
+
+        <div class="inputs">
+          <div>
+            <label for="dailyKm">Daily travel (km)</label>
+            <input id="dailyKm" type="number" min="0" step="1" value="30" />
+          </div>
+
+          <div>
+            <label for="vehicleType">Vehicle Type</label>
+            <select id="vehicleType">
+              <option value="car">Car</option>
+              <option value="ev_scooter">EV Scooter</option>
+              <option value="petrol_scooter">Petrol Scooter</option>
+            </select>
+            <div class="hint">Type is for context only; calculations use numeric inputs below.</div>
+          </div>
+
+          <!-- Fuel & maintenance -->
+          <div class="two-col">
+            <div class="stacked">
+              <label><strong>Petrol Vehicle</strong></label>
+              <div class="subgrid">
+                <div>
+                  <label class="label-muted" for="mileage">Mileage (km per litre)</label>
+                  <input id="mileage" type="number" min="1" step="0.1" value="18" />
+                </div>
+                <div>
+                  <label class="label-muted" for="petrolPrice">Petrol price (₹/litre)</label>
+                  <input id="petrolPrice" type="number" min="0" step="0.1" value="100" />
+                </div>
+              </div>
+
+              <div style="margin-top:8px;">
+                <label class="label-muted">Required floaters — tyres (annual ₹)</label>
+                <input id="petrolTyres" type="number" min="0" step="1" value="2000" />
+              </div>
+              <div>
+                <label class="label-muted">Required floaters — brake pads (annual ₹)</label>
+                <input id="petrolBrakes" type="number" min="0" step="1" value="800" />
+              </div>
+              <div>
+                <label class="label-muted">Required floaters — oil & filters (annual ₹)</label>
+                <input id="petrolOil" type="number" min="0" step="1" value="1200" />
+              </div>
+              <div style="margin-top:8px;">
+                <label class="label-muted">General service (annual ₹)</label>
+                <input id="petrolService" type="number" min="0" step="1" value="2000" />
+              </div>
+            </div>
+
+            <div class="stacked">
+              <label><strong>EV Vehicle</strong></label>
+              <div class="subgrid">
+                <div>
+                  <label class="label-muted" for="chargeCost">Cost per full charge (₹)</label>
+                  <input id="chargeCost" type="number" min="0" step="0.1" value="50" />
+                </div>
+                <div>
+                  <label class="label-muted" for="rangePerCharge">Range per charge (km)</label>
+                  <input id="rangePerCharge" type="number" min="1" step="1" value="60" />
+                </div>
+              </div>
+
+              <div style="margin-top:8px;">
+                <label class="label-muted">Required floaters — tyres (annual ₹)</label>
+                <input id="evTyres" type="number" min="0" step="1" value="2000" />
+              </div>
+              <div>
+                <label class="label-muted">Required floaters — brake pads (annual ₹)</label>
+                <input id="evBrakes" type="number" min="0" step="1" value="800" />
+              </div>
+              <div>
+                <label class="label-muted">Required floaters — consumables (annual ₹)</label>
+                <input id="evConsumables" type="number" min="0" step="1" value="500" />
+              </div>
+              <div style="margin-top:8px;">
+                <label class="label-muted">General service (annual ₹)</label>
+                <input id="evService" type="number" min="0" step="1" value="1500" />
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <label for="years">Years of ownership (analysis)</label>
+            <div style="display:flex;gap:12px;align-items:center;">
+              <input id="years" type="range" min="1" max="10" value="5" />
+              <div class="right-badge" id="yearsLabel">5 years</div>
+            </div>
+          </div>
+
+          <div class="cta">
+            <button id="calculateBtn" class="btn">Calculate Now ↓</button>
+            <button id="resetBtn" class="btn secondary">Reset</button>
+          </div>
+
+          <!-- Loan Calculator (optional) -->
+          <div class="card" style="margin-top:12px;padding:12px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <div style="font-weight:700;">Loan Calculator (optional)</div>
+              <div class="mini">Click Calculate (Loan) to update EMI impact</div>
+            </div>
+
+            <div style="margin-top:10px;" class="two-col">
+              <div>
+                <label class="label-muted" for="petrolVehiclePrice">Petrol vehicle price (₹)</label>
+                <input id="petrolVehiclePrice" type="number" min="0" step="100" value="500000" />
+              </div>
+              <div>
+                <label class="label-muted" for="evVehiclePrice">EV price (₹)</label>
+                <input id="evVehiclePrice" type="number" min="0" step="100" value="700000" />
+              </div>
+            </div>
+
+            <div style="margin-top:10px;" class="two-col">
+              <div>
+                <label class="label-muted" for="loanInterest">Loan interest (%) annual</label>
+                <input id="loanInterest" type="number" min="0" step="0.01" value="9.5" />
+              </div>
+              <div>
+                <label class="label-muted" for="loanTenure">Loan tenure (years)</label>
+                <input id="loanTenure" type="number" min="1" max="10" step="1" value="5" />
+              </div>
+            </div>
+
+            <div style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+              <div class="mini">
+                <div><strong>EV EMI</strong></div>
+                <div id="evEmi" class="big">—</div>
+              </div>
+              <div class="mini">
+                <div><strong>Petrol vehicle EMI</strong></div>
+                <div id="petrolEmi" class="big">—</div>
+              </div>
+            </div>
+
+            <div style="margin-top:10px;display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+              <div class="mini">
+                <div><strong>Monthly fuel savings (fuel + maintenance)</strong></div>
+                <div id="monthlyFuelSavings" class="big">—</div>
+              </div>
+              <div class="mini">
+                <div><strong>Net monthly savings (incl EMI & maintenance)</strong></div>
+                <div id="netMonthlySavings" class="big">—</div>
+              </div>
+            </div>
+
+            <div style="display:flex;gap:8px;margin-top:12px;">
+              <button id="loanCalculateBtn" class="btn ghost">Calculate (Loan)</button>
+              <button id="loanResetBtn" class="btn secondary">Reset Loan</button>
+            </div>
+
+            <div class="mini" id="loanTips" style="margin-top:10px;">
+              <div><strong>How EMI affects savings</strong>: EMI reduces monthly net savings. Click Calculate (Loan) to see impact and tips.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Results + Charts -->
+      <div>
+        <div class="card results compact">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+            <div>
+              <div style="font-weight:700;">Results</div>
+              <div class="hint">Monthly, total and EMI-aware comparison (maintenance included)</div>
+            </div>
+            <div class="small-badge" id="summaryBadge">Monthly view</div>
+          </div>
+
+          <div class="result-row">
+            <div>
+              <div class="label-muted">Summary</div>
+              <div style="display:flex;gap:12px;margin-top:8px;">
+                <div><div class="label-muted">Daily km</div><div class="big" id="dailyKmBadge">— km</div></div>
+                <div><div class="label-muted">Years</div><div class="big" id="yearsBadge">—</div></div>
+              </div>
+            </div>
+            <div class="small-badge">Quick compare</div>
+          </div>
+
+          <div class="result-row">
+            <div>
+              <div class="label-muted">Monthly cost (fuel/charge + EMI + maintenance)</div>
+              <div style="display:flex;gap:12px;margin-top:8px;">
+                <div>
+                  <div class="label-muted">Petrol</div>
+                  <div class="big" id="petrolMonthly">—</div>
+                  <div class="label-muted" style="font-size:12px;">(maintenance ₹ <span id="petrolMonthlyMaint">—</span>/mo)</div>
+                </div>
+                <div>
+                  <div class="label-muted">EV</div>
+                  <div class="big" id="evMonthly">—</div>
+                  <div class="label-muted" style="font-size:12px;">(maintenance ₹ <span id="evMonthlyMaint">—</span>/mo)</div>
+                </div>
+              </div>
+            </div>
+            <div style="text-align:right;">
+              <div class="label-muted">Monthly km</div>
+              <div class="big" id="monthlyKmBadge">—</div>
+            </div>
+          </div>
+
+          <div class="result-row" style="align-items:stretch;">
+            <div style="flex:1;">
+              <div class="label-muted">Total cost over ownership (all costs)</div>
+              <div style="display:flex;gap:12px;margin-top:8px;">
+                <div><div class="label-muted">Petrol</div><div class="big" id="petrolTotal">—</div></div>
+                <div><div class="label-muted">EV</div><div class="big" id="evTotal">—</div></div>
+              </div>
+            </div>
+            <div style="width:150px;">
+              <div class="label-muted">Total savings</div>
+              <div class="savings" id="totalSavings">—</div>
+            </div>
+          </div>
+
+          <div class="chart-wrap" style="margin-top:8px;">
+            <div style="width:100%;display:flex;justify-content:space-between;align-items:center;">
+              <div class="label-muted">Monthly cost comparison</div>
+              <div class="label-muted" id="breakEvenText">Break-even: —</div>
+            </div>
+            <canvas id="costChart" height="140" style="width:100%;"></canvas>
+          </div>
+
+          <div class="chart-wrap" style="margin-top:10px;">
+            <div style="width:100%;display:flex;justify-content:space-between;align-items:center;">
+              <div class="label-muted">Cumulative savings over time</div>
+              <div class="label-muted">X-axis: months</div>
+            </div>
+            <canvas id="cumulativeChart" height="140" style="width:100%;"></canvas>
+          </div>
+
+          <div class="chart-wrap" style="margin-top:10px;">
+            <div style="width:100%;display:flex;justify-content:space-between;align-items:center;">
+              <div class="label-muted">EMI Impact: cumulative with vs without EMI</div>
+              <div class="label-muted">Shows how EMI & maintenance reduce saving potential</div>
+            </div>
+            <canvas id="emiImpactChart" height="140" style="width:100%;"></canvas>
+          </div>
+        </div>
+
+        <footer>
+          <div class="label-muted">Formulas used:</div>
+          <div style="margin-top:6px;color:var(--muted);font-size:12px;">
+            <div>Petrol cost per km = petrol_price ÷ mileage</div>
+            <div>EV cost per km = charging_cost ÷ range</div>
+            <div>Monthly km = daily_km × 30</div>
+            <div>Monthly maintenance = (sum of floaters annual + service annual) ÷ 12</div>
+            <div>EMI uses standard amortization formula per vehicle</div>
+            <div>Total cost = (monthly fuel/charge + EMI + monthly maintenance) × 12 × years</div>
+          </div>
+        </footer>
+      </div>
+    </div>
   </div>
 
   <!-- Install banner -->
-  <div id="installBanner">Install EV Savings App</div>
+  <div id="installBanner">Install EV Savings App <button id="installDismiss">×</button></div>
 
-  <!-- Calculator JS logic -->
+  <!-- Inline service worker registration (creates blob URL) -->
   <script>
-    // ... your calculator JS code ...
-
-    // Service Worker registration
-    if ("serviceWorker" in navigator) {
+    // Service Worker registration using inline blob
+    if ('serviceWorker' in navigator) {
       const swCode = `
         const CACHE_NAME = "ev-savings-cache-v1";
-        const urlsToCache = ["/","/index.html"];
-        self.addEventListener("install", e => {
-          e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(urlsToCache)));
+        const urlsToCache = ["/", "/index.html"];
+        self.addEventListener("install", event => {
+          event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache)).catch(()=>{}));
         });
-        self.addEventListener("fetch", e => {
-          e.respondWith(caches.match(e.request).then(r => r || fetch(e.request)));
+        self.addEventListener("fetch", event => {
+          event.respondWith(caches.match(event.request).then(response => response || fetch(event.request)).catch(()=>fetch(event.request)));
         });
-        self.addEventListener("activate", e => {
-          e.waitUntil(caches.keys().then(keys =>
-            Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
-          ));
+        self.addEventListener("activate", event => {
+          event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))));
         });
       `;
-      const blob = new Blob([swCode], { type: "application/javascript" });
+      const blob = new Blob([swCode], { type: 'application/javascript' });
       const swUrl = URL.createObjectURL(blob);
-      navigator.serviceWorker.register(swUrl);
+      navigator.serviceWorker.register(swUrl).catch(()=>{});
     }
+  </script>
 
-    // Install prompt logic
-    let deferredPrompt;
-    const installBanner = document.getElementById("installBanner");
+  <!-- Main app logic -->
+  <script>
+    // Elements
+    const dailyKmEl = document.getElementById('dailyKm');
+    const vehicleTypeEl = document.getElementById('vehicleType');
+    const mileageEl = document.getElementById('mileage');
+    const petrolPriceEl = document.getElementById('petrolPrice');
+    const chargeCostEl = document.getElementById('chargeCost');
+    const rangeEl = document.getElementById('rangePerCharge');
+    const yearsEl = document.getElementById('years');
+    const yearsLabel = document.getElementById('yearsLabel');
+    const calculateBtn = document.getElementById('calculateBtn');
+    const resetBtn = document.getElementById('resetBtn');
 
-    window.addEventListener("beforeinstallprompt", (e) => {
-      e.preventDefault();
-      deferredPrompt = e;
-      installBanner.style.display = "block";
+    // Maintenance inputs
+    const petrolTyresEl = document.getElementById('petrolTyres');
+    const petrolBrakesEl = document.getElementById('petrolBrakes');
+    const petrolOilEl = document.getElementById('petrolOil');
+    const petrolServiceEl = document.getElementById('petrolService');
+
+    const evTyresEl = document.getElementById('evTyres');
+    const evBrakesEl = document.getElementById('evBrakes');
+    const evConsumablesEl = document.getElementById('evConsumables');
+    const evServiceEl = document.getElementById('evService');
+
+    // Loan inputs
+    const petrolVehiclePriceEl = document.getElementById('petrolVehiclePrice');
+    const evVehiclePriceEl = document.getElementById('evVehiclePrice');
+    const loanInterestEl = document.getElementById('loanInterest');
+    const loanTenureEl = document.getElementById('loanTenure');
+
+    // Loan outputs
+    const evEmiEl = document.getElementById('evEmi');
+    const petrolEmiEl = document.getElementById('petrolEmi');
+    const monthlyFuelSavingsEl = document.getElementById('monthlyFuelSavings');
+    const netMonthlySavingsEl = document.getElementById('netMonthlySavings');
+    const loanCalculateBtn = document.getElementById('loanCalculateBtn');
+    const loanResetBtn = document.getElementById('loanResetBtn');
+    const loanTips = document.getElementById('loanTips');
+
+    // Results
+    const petrolMonthlyEl = document.getElementById('petrolMonthly');
+    const evMonthlyEl = document.getElementById('evMonthly');
+    const petrolTotalEl = document.getElementById('petrolTotal');
+    const evTotalEl = document.getElementById('evTotal');
+    const totalSavingsEl = document.getElementById('totalSavings');
+    const dailyKmBadge = document.getElementById('dailyKmBadge');
+    const yearsBadge = document.getElementById('yearsBadge');
+    const monthlyKmBadge = document.getElementById('monthlyKmBadge');
+    const breakEvenText = document.getElementById('breakEvenText');
+    const petrolMonthlyMaintEl = document.getElementById('petrolMonthlyMaint');
+    const evMonthlyMaintEl = document.getElementById('evMonthlyMaint');
+
+    // Charts
+    const ctxCost = document.getElementById('costChart').getContext('2d');
+    const ctxCum = document.getElementById('cumulativeChart').getContext('2d');
+    const ctxEmi = document.getElementById('emiImpactChart').getContext('2d');
+
+    const costChart = new Chart(ctxCost, {
+      type: 'bar',
+      data: { labels: ['Petrol','EV'], datasets: [{ data:[0,0], backgroundColor:['#ff7a7a','#60a5fa'], borderRadius:8 }] },
+      options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ y:{ beginAtZero:true, ticks:{precision:0} } } }
     });
 
-    installBanner.addEventListener("click", async () => {
-      installBanner.style.display = "none";
+    const cumulativeChart = new Chart(ctxCum, {
+      type: 'line',
+      data: { labels:[], datasets:[{ label:'Cumulative savings (₹)', data:[], borderColor:'#16a34a', backgroundColor:'rgba(22,163,74,0.08)', fill:true, tension:0.25, pointRadius:0 }] },
+      options: { responsive:true, maintainAspectRatio:false, scales:{ x:{ title:{display:true,text:'Months'} }, y:{ beginAtZero:true, ticks:{precision:0} } }, plugins:{legend:{display:false}} }
+    });
+
+    const emiImpactChart = new Chart(ctxEmi, {
+      type: 'line',
+      data: {
+        labels: [],
+        datasets: [
+          { label: 'Cumulative without EMI (fuel+maint)', data: [], borderColor: '#2563eb', backgroundColor: 'rgba(37,99,235,0.06)', fill:false, tension:0.25, pointRadius:0 },
+          { label: 'Cumulative with EMI (incl EMI & maint)', data: [], borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,0.06)', fill:false, tension:0.25, pointRadius:0 }
+        ]
+      },
+      options: { responsive:true, maintainAspectRatio:false, scales:{ x:{ title:{display:true,text:'Months'} }, y:{ beginAtZero:true, ticks:{precision:0} } }, plugins:{ tooltip:{callbacks:{ label: ctx => `₹ ${Number(ctx.raw).toLocaleString()}` } } } }
+    });
+
+    // Utility: monthly loan payment using amortization
+    function monthlyLoanPayment(principal, annualRatePercent, years) {
+      if (principal <= 0 || years <= 0) return 0;
+      const r = (annualRatePercent / 100) / 12;
+      const n = years * 12;
+      if (r === 0) return principal / n;
+      return principal * (r / (1 - Math.pow(1 + r, -n)));
+    }
+
+    // Core calculation (fuel + maintenance + optional EMI)
+    function calculateAll() {
+      // Basic inputs
+      const dailyKm = Math.max(0, Number(dailyKmEl.value) || 0);
+      const mileage = Math.max(0.0001, Number(mileageEl.value) || 0.0001);
+      const petrolPrice = Math.max(0, Number(petrolPriceEl.value) || 0);
+      const chargeCost = Math.max(0, Number(chargeCostEl.value) || 0);
+      const rangePerCharge = Math.max(0.0001, Number(rangeEl.value) || 0.0001);
+      const analysisYears = Math.max(1, Number(yearsEl.value) || 1);
+
+      // Maintenance (annual)
+      const petrolTyres = Math.max(0, Number(petrolTyresEl.value) || 0);
+      const petrolBrakes = Math.max(0, Number(petrolBrakesEl.value) || 0);
+      const petrolOil = Math.max(0, Number(petrolOilEl.value) || 0);
+      const petrolService = Math.max(0, Number(petrolServiceEl.value) || 0);
+      const petrolFloatersAnnual = petrolTyres + petrolBrakes + petrolOil;
+      const petrolMonthlyMaint = (petrolFloatersAnnual + petrolService) / 12;
+
+      const evTyres = Math.max(0, Number(evTyresEl.value) || 0);
+      const evBrakes = Math.max(0, Number(evBrakesEl.value) || 0);
+      const evConsumables = Math.max(0, Number(evConsumablesEl.value) || 0);
+      const evService = Math.max(0, Number(evServiceEl.value) || 0);
+      const evFloatersAnnual = evTyres + evBrakes + evConsumables;
+      const evMonthlyMaint = (evFloatersAnnual + evService) / 12;
+
+      // Loan inputs (may be zero)
+      const petrolVehiclePrice = Math.max(0, Number(petrolVehiclePriceEl.value) || 0);
+      const evVehiclePrice = Math.max(0, Number(evVehiclePriceEl.value) || 0);
+      const loanInterest = Math.max(0, Number(loanInterestEl.value) || 0);
+      const loanTenureYears = Math.max(1, Number(loanTenureEl.value) || 1);
+
+      // Fuel/charge monthly
+      const monthlyKm = dailyKm * 30;
+      const petrolCostPerKm = petrolPrice / mileage;
+      const evCostPerKm = chargeCost / rangePerCharge;
+      const petrolFuelMonthly = monthlyKm * petrolCostPerKm;
+      const evChargeMonthly = monthlyKm * evCostPerKm;
+
+      // EMI calculations
+      const petrolEmi = monthlyLoanPayment(petrolVehiclePrice, loanInterest, loanTenureYears);
+      const evEmi = monthlyLoanPayment(evVehiclePrice, loanInterest, loanTenureYears);
+
+      // Total monthly ownership cost = fuel/charge + EMI + maintenance
+      const petrolMonthlyTotal = petrolFuelMonthly + petrolEmi + petrolMonthlyMaint;
+      const evMonthlyTotal = evChargeMonthly + evEmi + evMonthlyMaint;
+
+      // Totals over analysis period
+      const totalPetrol = petrolMonthlyTotal * 12 * analysisYears;
+      const totalEv = evMonthlyTotal * 12 * analysisYears;
+      const savings = totalPetrol - totalEv;
+
+      // Fuel-only monthly savings (including maintenance but excluding EMI)
+      const monthlyFuelSavings = (petrolFuelMonthly + petrolMonthlyMaint) - (evChargeMonthly + evMonthlyMaint);
+
+      // Net monthly savings including EMI difference
+      const netMonthlySavings = monthlyFuelSavings - (evEmi - petrolEmi);
+
+      // Break-even calculation (months to recoup upfront price difference)
+      let breakEvenTextStr = '—';
+      if (netMonthlySavings > 0) {
+        const priceDiff = evVehiclePrice - petrolVehiclePrice;
+        if (priceDiff <= 0) {
+          breakEvenTextStr = 'Immediate (EV cheaper upfront)';
+        } else {
+          const breakEvenMonth = Math.ceil(priceDiff / netMonthlySavings);
+          const yearsBE = Math.floor(breakEvenMonth / 12);
+          const monthsBE = breakEvenMonth % 12;
+          breakEvenTextStr = `${yearsBE}y ${monthsBE}m (month ${breakEvenMonth})`;
+        }
+      } else {
+        if (monthlyFuelSavings > 0) {
+          const priceDiff = evVehiclePrice - petrolVehiclePrice;
+          if (priceDiff <= 0) {
+            breakEvenTextStr = 'Immediate (EV cheaper upfront)';
+          } else {
+            const monthsFuelOnly = Math.ceil(priceDiff / monthlyFuelSavings);
+            const y = Math.floor(monthsFuelOnly / 12);
+            const mo = monthsFuelOnly % 12;
+            breakEvenTextStr = `~${y}y ${mo}m if EMI not considered (month ${monthsFuelOnly})`;
+          }
+        } else {
+          breakEvenTextStr = 'No break-even with current inputs';
+        }
+      }
+
+      // Update UI
+      evEmiEl.textContent = evEmi > 0 ? `₹ ${Math.round(evEmi).toLocaleString()}` : '₹ 0';
+      petrolEmiEl.textContent = petrolEmi > 0 ? `₹ ${Math.round(petrolEmi).toLocaleString()}` : '₹ 0';
+      monthlyFuelSavingsEl.textContent = `₹ ${Math.round(monthlyFuelSavings).toLocaleString()}`;
+      netMonthlySavingsEl.textContent = `₹ ${Math.round(netMonthlySavings).toLocaleString()}`;
+
+      petrolMonthlyEl.textContent = `₹ ${Math.round(petrolMonthlyTotal).toLocaleString()}`;
+      evMonthlyEl.textContent = `₹ ${Math.round(evMonthlyTotal).toLocaleString()}`;
+      petrolTotalEl.textContent = `₹ ${Math.round(totalPetrol).toLocaleString()}`;
+      evTotalEl.textContent = `₹ ${Math.round(totalEv).toLocaleString()}`;
+      totalSavingsEl.textContent = `₹ ${Math.round(savings).toLocaleString()}`;
+      dailyKmBadge.textContent = `${dailyKm} km`;
+      yearsBadge.textContent = `${analysisYears} years`;
+      monthlyKmBadge.textContent = `${monthlyKm.toLocaleString()} km`;
+      breakEvenText.textContent = `Break-even: ${breakEvenTextStr}`;
+      petrolMonthlyMaintEl.textContent = `${Math.round(petrolMonthlyMaint).toLocaleString()}`;
+      evMonthlyMaintEl.textContent = `${Math.round(evMonthlyMaint).toLocaleString()}`;
+
+      // Color savings
+      if (savings >= 0) {
+        totalSavingsEl.style.color = 'var(--green)';
+        totalSavingsEl.style.background = 'linear-gradient(90deg,#ecfdf5,#f0fdf4)';
+        totalSavingsEl.style.border = '1px solid rgba(16,185,129,0.12)';
+      } else {
+        totalSavingsEl.style.color = 'var(--danger)';
+        totalSavingsEl.style.background = 'linear-gradient(90deg,#fff5f5,#fff7f7)';
+        totalSavingsEl.style.border = '1px solid rgba(239,68,68,0.08)';
+      }
+
+      // Update monthly comparison chart
+      costChart.data.datasets[0].data = [Math.round(petrolMonthlyTotal), Math.round(evMonthlyTotal)];
+      costChart.update();
+
+      // Build cumulative savings timeline (month-by-month)
+      const months = Math.max(1, analysisYears * 12);
+      const monthlyDelta = petrolMonthlyTotal - evMonthlyTotal; // positive means EV saves each month
+      const labels = [];
+      const cumData = [];
+      let cum = 0;
+      for (let m = 1; m <= months; m++) {
+        cum += monthlyDelta;
+        labels.push(m);
+        cumData.push(Math.round(cum));
+      }
+      cumulativeChart.data.labels = labels;
+      cumulativeChart.data.datasets[0].data = cumData;
+      cumulativeChart.update();
+
+      // Update EMI impact chart
+      updateEmiImpactChart();
+    }
+
+    // Loan-only calculate: updates EMI values, net monthly savings and EMI impact chart
+    function calculateLoanSection() {
+      // Reuse calculateAll logic but ensure EMI outputs and tips update
+      calculateAll();
+
+      // Update tips: actionable suggestions to increase savings
+      const monthlyFuelSavings = Number(monthlyFuelSavingsEl.textContent.replace(/[^\d-]/g,'')) || 0;
+      const netMonthlySavings = Number(netMonthlySavingsEl.textContent.replace(/[^\d-]/g,'')) || 0;
+      const tips = [];
+      if (netMonthlySavings <= 0) {
+        tips.push('Increase down payment to reduce EMI or extend tenure carefully.');
+        tips.push('Lower charging cost: charge during off-peak hours or use cheaper plans.');
+        tips.push('Reduce floaters by buying consumables in bulk or using service packages.');
+        tips.push('Improve efficiency: smoother driving, proper tyre pressure, lighter load.');
+      } else {
+        tips.push('Net monthly savings are positive — keep charging costs low and maintain efficiency.');
+        tips.push('Consider paying extra principal if you want to shorten loan tenure and reduce interest.');
+      }
+      loanTips.innerHTML = `<div><strong>How to increase savings</strong>:</div><ul style="margin:8px 0 0 18px;color:var(--muted)">${tips.map(t => `<li>${t}</li>`).join('')}</ul>`;
+    }
+
+    // Update EMI impact chart: cumulative fuel-only vs cumulative with EMI (net)
+    function updateEmiImpactChart() {
+      const dailyKm = Math.max(0, Number(dailyKmEl.value) || 0);
+      const mileage = Math.max(0.0001, Number(mileageEl.value) || 0.0001);
+      const petrolPrice = Math.max(0, Number(petrolPriceEl.value) || 0);
+      const chargeCost = Math.max(0, Number(chargeCostEl.value) || 0);
+      const rangePerCharge = Math.max(0.0001, Number(rangeEl.value) || 0.0001);
+      const analysisYears = Math.max(1, Number(yearsEl.value) || 1);
+
+      const petrolTyres = Math.max(0, Number(petrolTyresEl.value) || 0);
+      const petrolBrakes = Math.max(0, Number(petrolBrakesEl.value) || 0);
+      const petrolOil = Math.max(0, Number(petrolOilEl.value) || 0);
+      const petrolService = Math.max(0, Number(petrolServiceEl.value) || 0);
+      const petrolMonthlyMaint = (petrolTyres + petrolBrakes + petrolOil + petrolService) / 12;
+
+      const evTyres = Math.max(0, Number(evTyresEl.value) || 0);
+      const evBrakes = Math.max(0, Number(evBrakesEl.value) || 0);
+      const evConsumables = Math.max(0, Number(evConsumablesEl.value) || 0);
+      const evService = Math.max(0, Number(evServiceEl.value) || 0);
+      const evMonthlyMaint = (evTyres + evBrakes + evConsumables + evService) / 12;
+
+      const petrolVehiclePrice = Math.max(0, Number(petrolVehiclePriceEl.value) || 0);
+      const evVehiclePrice = Math.max(0, Number(evVehiclePriceEl.value) || 0);
+      const loanInterest = Math.max(0, Number(loanInterestEl.value) || 0);
+      const loanTenureYears = Math.max(1, Number(loanTenureEl.value) || 1);
+
+      const petrolCostPerKm = petrolPrice / mileage;
+      const evCostPerKm = chargeCost / rangePerCharge;
+      const monthlyKm = dailyKm * 30;
+      const petrolFuelMonthly = monthlyKm * petrolCostPerKm;
+      const evChargeMonthly = monthlyKm * evCostPerKm;
+
+      const petrolEmi = monthlyLoanPayment(petrolVehiclePrice, loanInterest, loanTenureYears);
+      const evEmi = monthlyLoanPayment(evVehiclePrice, loanInterest, loanTenureYears);
+
+      const months = Math.max(1, analysisYears * 12);
+      const labels = [];
+      const cumWithoutEmi = [];
+      const cumWithEmi = [];
+      let cumNoEmi = 0;
+      let cumWith = 0;
+
+      for (let m = 1; m <= months; m++) {
+        cumNoEmi += ((petrolFuelMonthly + petrolMonthlyMaint) - (evChargeMonthly + evMonthlyMaint));
+        cumWith += ((petrolFuelMonthly + petrolMonthlyMaint + petrolEmi) - (evChargeMonthly + evMonthlyMaint + evEmi));
+        labels.push(m);
+        cumWithoutEmi.push(Math.round(cumNoEmi));
+        cumWithEmi.push(Math.round(cumWith));
+      }
+
+      emiImpactChart.data.labels = labels;
+      emiImpactChart.data.datasets[0].data = cumWithoutEmi;
+      emiImpactChart.data.datasets[1].data = cumWithEmi;
+      emiImpactChart.update();
+    }
+
+    // Events
+    yearsEl.addEventListener('input', () => { yearsLabel.textContent = `${yearsEl.value} years`; });
+    calculateBtn.addEventListener('click', () => { calculateAll(); });
+    resetBtn.addEventListener('click', () => {
+      // Reset core inputs
+      dailyKmEl.value = 30; mileageEl.value = 18; petrolPriceEl.value = 100;
+      chargeCostEl.value = 50; rangeEl.value = 60; yearsEl.value = 5; yearsLabel.textContent = '5 years';
+
+      // Reset maintenance
+      petrolTyresEl.value = 2000; petrolBrakesEl.value = 800; petrolOilEl.value = 1200; petrolServiceEl.value = 2000;
+      evTyresEl.value = 2000; evBrakesEl.value = 800; evConsumablesEl.value = 500; evServiceEl.value = 1500;
+
+      // Reset loan inputs
+      petrolVehiclePriceEl.value = 500000; evVehiclePriceEl.value = 700000;
+      loanInterestEl.value = 9.5; loanTenureEl.value = 5;
+
+      // Clear loan outputs and tips
+      evEmiEl.textContent = '—'; petrolEmiEl.textContent = '—';
+      monthlyFuelSavingsEl.textContent = '—'; netMonthlySavingsEl.textContent = '—';
+      loanTips.innerHTML = `<div><strong>How EMI affects savings</strong>: EMI reduces monthly net savings. Click Calculate (Loan) to see impact.</div>`;
+
+      calculateAll();
+    });
+
+    loanCalculateBtn.addEventListener('click', () => { calculateLoanSection(); });
+    loanResetBtn.addEventListener('click', () => {
+      petrolVehiclePriceEl.value = 500000; evVehiclePriceEl.value = 700000;
+      loanInterestEl.value = 9.5; loanTenureEl.value = 5;
+      evEmiEl.textContent = '—'; petrolEmiEl.textContent = '—';
+      monthlyFuelSavingsEl.textContent = '—'; netMonthlySavingsEl.textContent = '—';
+      loanTips.innerHTML = `<div><strong>How EMI affects savings</strong>: EMI reduces monthly net savings. Click Calculate (Loan) to see impact.</div>`;
+      updateEmiImpactChart();
+    });
+
+    // Initial calculation
+    calculateAll();
+
+    // PWA install prompt logic
+    let deferredPrompt = null;
+    const installBanner = document.getElementById('installBanner');
+    const installDismiss = document.getElementById('installDismiss');
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      installBanner.style.display = 'block';
+    });
+
+    installBanner.addEventListener('click', async (e) => {
+      // If user clicked the dismiss button, ignore
+      if (e.target === installDismiss) return;
+      installBanner.style.display = 'none';
       if (deferredPrompt) {
         deferredPrompt.prompt();
-        const choiceResult = await deferredPrompt.userChoice;
-        if (choiceResult.outcome === "accepted") {
-          console.log("User accepted the install prompt");
-        } else {
-          console.log("User dismissed the install prompt");
-        }
+        const choice = await deferredPrompt.userChoice;
         deferredPrompt = null;
       }
     });
+
+    installDismiss.addEventListener('click', (e) => {
+      e.stopPropagation();
+      installBanner.style.display = 'none';
+    });
+
+    // Optional: hide install banner after 30s if not acted upon
+    setInterval(() => {
+      if (installBanner.style.display === 'block') installBanner.style.display = 'none';
+    }, 30000);
   </script>
 </body>
 </html>
